@@ -1,0 +1,11 @@
+*.pyc
+*~
+.*.sw[op]
+*.egg-info
+dist
+build
+_build
+local
+distribute-*
+.coverage
+.tox

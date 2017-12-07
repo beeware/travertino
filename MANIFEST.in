@@ -1,0 +1,9 @@
+include CHANGELOG.rst
+include CONTRIBUTING.md
+include README.rst
+include AUTHORS
+include LICENSE
+include beekeeper.yml
+recursive-include travertino *.py
+recursive-include tests *.py
+recursive-include tests *.json
