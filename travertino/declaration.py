@@ -54,7 +54,7 @@ class Choices:
             if value == const:
                 return const
 
-        raise ValueError()
+        raise ValueError("'{0}' is not a valid initial value".format(value))
 
     def __str__(self):
         return ", ".join(self._options)
@@ -65,7 +65,10 @@ _VALIDATED_PROPERTIES = set()
 
 def validated_property(name, choices, initial=None):
     "Define a simple validated property attribute."
-    initial = choices.validate(initial)
+    try:
+        initial = choices.validate(initial)
+    except ValueError:
+        raise ValueError("Invalid initial value '{}' for property '{}'".format(initial, name))
 
     def getter(self):
         return getattr(self, '_%s' % name, initial)
@@ -74,7 +77,7 @@ def validated_property(name, choices, initial=None):
         try:
             value = choices.validate(value)
         except ValueError:
-            raise ValueError("Invalid value '%s' for property '%s'; Valid values are: %s" % (
+            raise ValueError("Invalid value '{}' for property '{}'; Valid values are: {}".format(
                 value, name, choices
             ))
 
@@ -131,7 +134,7 @@ def directional_property(name):
                 setattr(self, name % '_bottom', value[0])
                 setattr(self, name % '_left', value[0])
             else:
-                raise ValueError("Invalid value for '%s'; value must be an number, or a 1-4 tuple." % (name % ''))
+                raise ValueError("Invalid value for '{}'; value must be an number, or a 1-4 tuple.".format(name % ''))
         else:
             setattr(self, name % '_top', value)
             setattr(self, name % '_right', value)

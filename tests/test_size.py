@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock
 
-from travertino.size import IntrinsicSize, at_least
+from travertino.size import BaseIntrinsicSize, at_least
 
 
 class SizeTests(TestCase):
@@ -14,15 +14,20 @@ class SizeTests(TestCase):
         self.maxDiff = None
 
         self.layout = Mock()
-        self.size = IntrinsicSize(self.layout)
+        self.size = BaseIntrinsicSize(layout=self.layout)
         self.size._width = 1
         self.size._height = 2
         self.size._ratio = 0.1
 
         self.assertSize(self.size, (1, 2, 0.1))
 
-    def test_repr(self):
+    def test_at_least_repr(self):
         self.assertEqual(repr(at_least(10)), 'at least 10')
+
+    def test_size_repr(self):
+        self.assertEqual(repr(self.size), '(1, 2)')
+        self.size.width = at_least(10)
+        self.assertEqual(repr(self.size), '(at least 10, 2)')
 
     def test_set_width(self):
         self.size.width = 10

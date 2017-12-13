@@ -14,20 +14,22 @@ class at_least:
             return False
 
 
-class IntrinsicSize:
+class BaseIntrinsicSize:
     """Representation of the intrinsic size of an object.
-
 
     width: The width of the node.
     height: The height of the node.
     ratio: The height between height and width. width = height * ratio
     """
-    def __init__(self, layout=None):
+    def __init__(self, width=None, height=None, ratio=None, layout=None):
         self._layout = layout
-        self._width = None
-        self._height = None
+        self._width = width
+        self._height = height
 
         self._ratio = None
+
+    def __repr__(self):
+        return '({}, {})'.format(self.width, self.height)
 
     @property
     def width(self):

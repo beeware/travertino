@@ -37,6 +37,12 @@ class TestNode:
 
 
 class DeclarationTests(TestCase):
+    def test_invalid_style(self):
+        with self.assertRaises(ValueError):
+            # Define a style that has an invalid initial value on a validated property
+            class BadStyle(BaseStyle):
+                value = validated_property('value', choices=VALUE_CHOICES, initial='something')
+
     def test_create_and_copy(self):
         style = Style(explicit_const=VALUE2, implicit=VALUE3)
 
