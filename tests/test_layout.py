@@ -15,8 +15,8 @@ class Style(BaseStyle):
 
     def layout(self, root, viewport):
         # A simple layout scheme that allocats twice the viewport size.
-        root.layout.content_width = viewport[Viewport.WIDTH] * 2
-        root.layout.content_height = viewport[Viewport.HEIGHT] * 2
+        root.layout.content_width = viewport.width * 2
+        root.layout.content_height = viewport.height * 2
 
 
 class ViewportTests(TestCase):
@@ -34,15 +34,6 @@ class ViewportTests(TestCase):
         self.assertEqual(viewport.height, 480)
         self.assertEqual(viewport.dpi, 96)
 
-    def test_getitem_proxying(self):
-        viewport = Viewport(width=640, height=480, dpi=96)
-
-        self.assertEqual(viewport[Viewport.WIDTH], 640)
-        self.assertEqual(viewport[Viewport.HEIGHT], 480)
-        self.assertEqual(viewport[Viewport.DPI], 96)
-
-        with self.assertRaises(AttributeError):
-            viewport['something']
 
 class BoxTests(TestCase):
     def setUp(self):

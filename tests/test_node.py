@@ -15,8 +15,8 @@ class Style(BaseStyle):
 
     def layout(self, root, viewport):
         # A simple layout scheme that allocats twice the viewport size.
-        root.layout.content_width = viewport[Viewport.WIDTH] * 2
-        root.layout.content_height = viewport[Viewport.HEIGHT] * 2
+        root.layout.content_width = viewport.width * 2
+        root.layout.content_height = viewport.height * 2
 
 
 class NodeTests(TestCase):
@@ -100,33 +100,46 @@ class NodeTests(TestCase):
         "The layout can be refreshed, and the applicator invoked"
         # Define an applicator that tracks the node being rendered and it's size
         class Applicator:
-            def __init__(self):
+            def __init__(self, node):
                 self.tasks = []
+                self.node = node
 
-            def set_bounds(self, node):
-                self.tasks.append((node, node.layout.content_width, node.layout.content_height))
+            def set_bounds(self):
+                self.tasks.append((self.node, self.node.layout.content_width, self.node.layout.content_height))
 
-        output = Applicator()
+        class TestNode(Node):
+            def __init__(self, style, children=None):
+                super().__init__(
+                    style=style,
+                    applicator=Applicator(self),
+                    children=children
+                )
 
         # Define a simple 2 level tree of nodes.
         style = Style()
-        child1 = Node(style=style, applicator=output)
-        child2 = Node(style=style, applicator=output)
-        child3 = Node(style=style, applicator=output)
+        child1 = TestNode(style=style)
+        child2 = TestNode(style=style)
+        child3 = TestNode(style=style)
 
-        node = Node(style=style, applicator=output, children=[child1, child2, child3])
+        node = TestNode(style=style, children=[child1, child2, child3])
 
         # Refresh the root node
         node.refresh(Viewport(width=10, height=20))
 
         # Check the output is as expected
-        self.assertEqual(output.tasks, [(node, 20, 40)])
+        self.assertEqual(node.applicator.tasks, [(node, 20, 40)])
+        self.assertEqual(child1.applicator.tasks, [])
+        self.assertEqual(child2.applicator.tasks, [])
+        self.assertEqual(child3.applicator.tasks, [])
 
         # Reset the applicator
-        output.tasks = []
+        node.applicator.tasks = []
 
         # Refresh a child node
         child1.refresh(Viewport(width=15, height=25))
 
         # The root node was rendered, not the child.
-        self.assertEqual(output.tasks, [(node, 30, 50)])
+        self.assertEqual(node.applicator.tasks, [(node, 30, 50)])
+        self.assertEqual(child1.applicator.tasks, [])
+        self.assertEqual(child2.applicator.tasks, [])
+        self.assertEqual(child3.applicator.tasks, [])

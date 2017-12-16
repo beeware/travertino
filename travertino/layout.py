@@ -5,23 +5,10 @@ class Viewport:
     rendered. It stores the size of the surface(in pixels), plus the
     pixel density of the viewport.
     """
-    WIDTH = 'width'
-    HEIGHT = 'height'
-    DPI = 'dpi'
-
     def __init__(self, width=0, height=0, dpi=None):
         self.width = width
         self.height = height
         self.dpi = dpi
-
-    def __getitem__(self, item):
-        if item == Viewport.WIDTH:
-            return self.width
-        elif item == Viewport.HEIGHT:
-            return self.height
-        elif item == Viewport.DPI:
-            return self.dpi
-        raise AttributeError(item)
 
 
 class BaseBox:

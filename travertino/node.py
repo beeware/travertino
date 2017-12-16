@@ -9,10 +9,10 @@ def set_root(node, root):
 
 class Node:
     def __init__(self, style, applicator=None, children=None):
-        self.style = style
+        self.applicator = applicator
+        self.style = style.copy(applicator)
         self.intrinsic = self.style.IntrinsicSize()
         self.layout = self.style.Box(self)
-        self.applicator = applicator
 
         self._parent = None
         self._root = None
@@ -81,6 +81,9 @@ class Node:
 
     def refresh(self, viewport):
         """Refresh the layout and appearance of the tree this node is contained in."""
-        self.root.style.layout(self.root, viewport)
-        if self.applicator:
-            self.applicator.set_bounds(self.root)
+        if self._root:
+            self._root.refresh(viewport)
+        else:
+            self.style.layout(self, viewport)
+            if self.applicator:
+                self.applicator.set_bounds()

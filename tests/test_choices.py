@@ -3,21 +3,21 @@ from unittest.mock import Mock
 
 from travertino.colors import NAMED_COLOR, rgb
 from travertino.constants import TOP, GOLDENROD, REBECCAPURPLE
-from travertino.declaration import Choices, validated_property
+from travertino.declaration import Choices, BaseStyle
 
 
 class PropertyChoiceTests(TestCase):
     def assert_property(self, obj, value, check_mock=True):
         self.assertEqual(obj.prop, value)
         if check_mock:
-            obj._layout.dirty.assert_called_once_with('prop', value)
-            obj._layout.dirty.reset_mock()
+            obj.apply.assert_called_once_with('prop', value)
+            obj.apply.reset_mock()
 
     def test_none(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices(None), initial=None)
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices(None), initial=None)
 
         obj = MyObject()
         self.assertIsNone(obj.prop)
@@ -57,10 +57,10 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_string(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices(string=True), initial='start')
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices(string=True), initial='start')
 
         obj = MyObject()
         self.assertEqual(obj.prop, 'start')
@@ -100,10 +100,10 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_integer(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices(integer=True), initial=0)
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices(integer=True), initial=0)
 
         obj = MyObject()
         self.assertEqual(obj.prop, 0)
@@ -145,10 +145,10 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_number(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices(number=True), initial=0)
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices(number=True), initial=0)
 
         obj = MyObject()
         self.assertEqual(obj.prop, 0)
@@ -188,10 +188,10 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_color(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices(color=True), initial='goldenrod')
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices(color=True), initial='goldenrod')
 
         obj = MyObject()
         self.assertEqual(obj.prop, NAMED_COLOR[GOLDENROD])
@@ -231,10 +231,10 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_values(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices('a', 'b', None), initial='a')
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices('a', 'b', None), initial='a')
 
         obj = MyObject()
         self.assertEqual(obj.prop, 'a')
@@ -275,10 +275,10 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_multiple_choices(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices(
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices(
                 'a', 'b', None,
                 number=True, color=True
             ), initial=None)
@@ -321,10 +321,10 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_string_symbol(self):
-        class MyObject:
+        class MyObject(BaseStyle):
             def __init__(self):
-                self._layout = Mock()
-            prop = validated_property('prop', choices=Choices(TOP, None), initial=None)
+                self.apply = Mock()
+        MyObject.validated_property('prop', choices=Choices(TOP, None), initial=None)
 
         obj = MyObject()
 
