@@ -113,7 +113,7 @@ def color(value):
     * A named color
     """
 
-    if isinstance(value, (rgb, rgba, hsl, hsla)):
+    if isinstance(value, Color):
         return value
 
     elif isinstance(value, str):
