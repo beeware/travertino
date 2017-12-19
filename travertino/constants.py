@@ -29,6 +29,9 @@ LTR = 'ltr'
 # Font family
 ######################################################################
 
+SYSTEM = 'system'
+MESSAGE = 'message'
+
 SERIF = 'serif'
 SANS_SERIF = 'sans-serif'
 CURSIVE = 'cursive'
