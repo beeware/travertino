@@ -27,6 +27,9 @@ class rgba(Color):
         self.b = b
         self.a = a
 
+    def __hash__(self):
+        return hash(('RGBA-color', self.r, self.g, self.b, self.a))
+
     def __repr__(self):
         return "rgba({}, {}, {}, {})".format(self.r, self.g, self.b, self.a)
 
@@ -51,6 +54,9 @@ class hsla(Color):
         self.s = s
         self.l = l
         self.a = a
+
+    def __hash__(self):
+        return hash(('HSLA-color', self.h, self.s, self.l, self.a))
 
     def __repr__(self):
         return "hsla({}, {}, {}, {})".format(self.h, self.s, self.l, self.a)

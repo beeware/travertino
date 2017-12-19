@@ -24,6 +24,9 @@ class Font:
         self.variant = variant if variant in FONT_VARIANTS else NORMAL
         self.weight = weight if weight in FONT_WEIGHTS else NORMAL
 
+    def __hash__(self):
+        return hash(('FONT', self.family, self.size, self.style, self.variant, self.weight))
+
     def __repr__(self):
         return '<Font: {}{}{}{}pt {}>'.format(
             '' if self.style is NORMAL else (self.style + ' '),

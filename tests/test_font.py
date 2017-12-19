@@ -18,6 +18,17 @@ class FontTests(TestCase):
             Font('Comic Sans', 12, NORMAL, NORMAL, NORMAL)
         )
 
+    def test_hash(self):
+        self.assertEqual(
+            hash(Font('Comic Sans', 12)),
+            hash(Font('Comic Sans', 12)),
+        )
+
+        self.assertNotEqual(
+            hash(Font('Comic Sans', 12, weight=BOLD)),
+            hash(Font('Comic Sans', 12)),
+        )
+
     def test_repr(self):
         self.assertEqual(
             repr(Font('Comic Sans', 12)),

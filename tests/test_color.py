@@ -22,6 +22,26 @@ class ColorTests(TestCase):
     def test_hsla_repr(self):
         self.assertEqual(repr(hsla(10, 0.2, 0.3, 0.5)), "hsla(10, 0.2, 0.3, 0.5)")
 
+    def test_rgb_hash(self):
+        self.assertEqual(hash(rgb(10, 20, 30)), hash(rgb(10, 20, 30)))
+        self.assertNotEqual(hash(rgb(10, 20, 30)), hash(rgb(30, 20, 10)))
+
+    def test_rgba_hash(self):
+        self.assertEqual(hash(rgba(10, 20, 30, 0.5)), hash(rgba(10, 20, 30, 0.5)))
+        self.assertEqual(hash(rgba(10, 20, 30, 1.0)), hash(rgb(10, 20, 30)))
+        self.assertNotEqual(hash(rgb(10, 20, 30)), hash(rgb(30, 20, 10)))
+
+    def test_hsl_hash(self):
+        self.assertEqual(hash(hsl(10, 0.2, 0.3)), hash(hsl(10, 0.2, 0.3)))
+        self.assertNotEqual(hash(hsl(10, 0.3, 0.2)), hash(hsl(10, 0.2, 0.3)))
+
+    def test_hsla_hash(self):
+        self.assertEqual(hash(hsla(10, 0.2, 0.3, 0.5)), hash(hsla(10, 0.2, 0.3, 0.5)))
+        self.assertEqual(hash(hsla(10, 0.2, 0.3, 1.0)), hash(hsl(10, 0.2, 0.3)))
+        self.assertNotEqual(hash(hsla(10, 0.3, 0.2, 0.5)), hash(hsla(10, 0.2, 0.3, 0.5)))
+
+        self.assertNotEqual(hash(hsla(10, 0, 0, 0.5)), hash(rgba(10, 0, 0, 0.5)))
+
     def test_hsl_blacks(self):
         self.assertEqualColor(hsl(0, 0.0, 0.0), rgb(0x00, 0x00, 0x00))
         self.assertEqualColor(hsl(60, 0.0, 0.0), rgb(0x00, 0x00, 0x00))
