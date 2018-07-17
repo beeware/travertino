@@ -50,6 +50,7 @@ class Choices:
                 pass
         if value == 'none':
             value = None
+            return value
         for const in self.constants:
             if value == const:
                 return const
@@ -278,4 +279,3 @@ class BaseStyle:
 
     #     _PROPERTIES.add(name)
     #     return property(getter, setter, deleter)
-
