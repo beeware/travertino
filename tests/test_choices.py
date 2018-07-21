@@ -40,10 +40,10 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = 'b'
 
-        obj.prop = None
-        self.assert_property(obj, None, check_mock=False)
+        with self.assertRaises(ValueError):
+            obj.prop = 'none'
 
-        obj.prop = 'none'
+        obj.prop = None
         self.assert_property(obj, None, check_mock=False)
 
         # Check the error message
@@ -234,7 +234,8 @@ class PropertyChoiceTests(TestCase):
         class MyObject(BaseStyle):
             def __init__(self):
                 self.apply = Mock()
-        MyObject.validated_property('prop', choices=Choices('a', 'b', None), initial='a')
+        MyObject.validated_property(
+            'prop', choices=Choices('a', 'b', 'none', None), initial='a')
 
         obj = MyObject()
         self.assertEqual(obj.prop, 'a')
@@ -258,7 +259,7 @@ class PropertyChoiceTests(TestCase):
         self.assert_property(obj, 'a')
 
         obj.prop = 'none'
-        self.assert_property(obj, None)
+        self.assert_property(obj, 'none')
 
         obj.prop = 'b'
         self.assert_property(obj, 'b')
@@ -268,10 +269,11 @@ class PropertyChoiceTests(TestCase):
         try:
             obj.prop = 'invalid'
             self.fail('Should raise ValueError')
+
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value 'invalid' for property 'prop'; Valid values are: a, b, none"
+                "Invalid value 'invalid' for property 'prop'; Valid values are: a, b, none, none"
             )
 
     def test_multiple_choices(self):

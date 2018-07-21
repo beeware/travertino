@@ -25,6 +25,8 @@ class Choices:
             self._options.append("<color>")
 
     def validate(self, value):
+        if value == 'none' and (self.integer or self.number or self.color):
+            value = None
         if self.default:
             if value is None:
                 return None
@@ -48,8 +50,6 @@ class Choices:
                 return color(value)
             except ValueError:
                 pass
-        if value == 'none':
-            value = None
         for const in self.constants:
             if value == const:
                 return const
