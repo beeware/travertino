@@ -24,8 +24,6 @@ class Choices:
         if self.default:
             if value is None:
                 return None
-        if value is 'none' and not self.string:
-            raise ValueError("The string 'none' is not a valid initial value")
         if ((self.string and type(value) is str) or (
                 self.integer and type(value) is int) or (
                     self.number and type(value) is float)):
@@ -38,7 +36,8 @@ class Choices:
         for const in self.constants:
             if value == const:
                 return const
-
+        if value is 'none' and not self.string:
+            raise ValueError("The string 'none' is not a valid initial value")
         raise ValueError("'{0}' is not a valid initial value".format(value))
 
     def __str__(self):
