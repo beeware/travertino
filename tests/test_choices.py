@@ -305,9 +305,6 @@ class PropertyChoiceTests(TestCase):
         obj.prop = 'a'
         self.assert_property(obj, 'a')
 
-        obj.prop = 'none'
-        self.assert_property(obj, None)
-
         obj.prop = 'b'
         self.assert_property(obj, 'b')
 
