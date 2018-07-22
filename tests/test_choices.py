@@ -269,7 +269,6 @@ class PropertyChoiceTests(TestCase):
         try:
             obj.prop = 'invalid'
             self.fail('Should raise ValueError')
-
         except ValueError as v:
             self.assertEqual(
                 str(v),
