@@ -2,49 +2,34 @@ from .colors import color
 
 
 class Choices:
-    "A class to define allowable data types for a property"
+    """
+    A class to define allowable data types for a property.
+    Note: multiple allowable data types can be included in a Choices instance.
+    """
     def __init__(
             self, *constants, default=False,
             string=False, integer=False, number=False, color=False):
         self.constants = set(constants)
         self.default = default
-
         self.string = string
         self.integer = integer
         self.number = number
         self.color = color
-
-        self._options = sorted(str(c).lower().replace('_', '-') for c in self.constants)
-        if self.string:
-            self._options.append("<string>")
-        if self.integer:
-            self._options.append("<integer>")
-        if self.number:
-            self._options.append("<number>")
-        if self.color:
-            self._options.append("<color>")
+        allowable_types = ('string', 'integer', 'number', 'color')
+        self._types = [t for t in allowable_types if self.__getattr__(t)]
+        self._options = sorted(
+            str(c).lower().replace('_', '-') for c in self.constants)
 
     def validate(self, value):
-        if value == 'none' and (self.integer or self.number or self.color):
-            value = None
         if self.default:
             if value is None:
                 return None
-        if self.string:
-            try:
-                return value.strip()
-            except AttributeError:
-                pass
-        if self.integer:
-            try:
-                return int(value)
-            except (ValueError, TypeError):
-                pass
-        if self.number:
-            try:
-                return float(value)
-            except (ValueError, TypeError):
-                pass
+        if value is 'none' and not self.string:
+            raise ValueError("The string 'none' is not a valid initial value")
+        if ((self.string and type(value) is str) or (
+                self.integer and type(value) is int) or (
+                    self.number and type(value) is float)):
+            return value
         if self.color:
             try:
                 return color(value)
@@ -57,7 +42,8 @@ class Choices:
         raise ValueError("'{0}' is not a valid initial value".format(value))
 
     def __str__(self):
-        return ", ".join(self._options)
+        return ", ".join(
+            self._options + "".join(["<{}>".format(t) for t in self._types]))
 
 
 class BaseStyle:
