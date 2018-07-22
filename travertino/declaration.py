@@ -42,7 +42,7 @@ class Choices:
 
     def __str__(self):
         return ", ".join(
-            self._options + "".join(["<{}>".format(t) for t in self._types]))
+            self._options + ["<{}>".format(t) for t in self._types])
 
 
 class BaseStyle:
