@@ -16,7 +16,7 @@ class Choices:
         self.number = number
         self.color = color
         allowable_types = ('string', 'integer', 'number', 'color')
-        self._types = [t for t in allowable_types if self.__getattr__(t)]
+        self._types = [t for t in allowable_types if getattr(self, t)]
         self._options = sorted(
             str(c).lower().replace('_', '-') for c in self.constants)
 
