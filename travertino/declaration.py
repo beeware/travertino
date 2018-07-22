@@ -24,10 +24,21 @@ class Choices:
         if self.default:
             if value is None:
                 return None
-        if ((self.string and type(value) is str) or (
-                self.integer and type(value) is int) or (
-                    self.number and type(value) is float)):
-            return value
+        if self.string:
+            try:
+                return value.strip()
+            except AttributeError:
+                pass
+        if self.integer:
+            try:
+                return int(value)
+            except (ValueError, TypeError):
+                pass
+        if self.number:
+            try:
+                return float(value)
+            except (ValueError, TypeError):
+                pass
         if self.color:
             try:
                 return color(value)
