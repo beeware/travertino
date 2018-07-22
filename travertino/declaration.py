@@ -11,6 +11,7 @@ class Choices:
             string=False, integer=False, number=False, color=False):
         self.constants = set(constants)
         self.default = default
+
         self.string = string
         self.integer = integer
         self.number = number
