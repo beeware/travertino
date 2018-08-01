@@ -5,7 +5,7 @@
 Travertino
 ==========
 
-.. image:: hhttps://img.shields.io/badge/python-3.5%2C%203.6%2C%203.7-blue.svg
+.. image:: https://img.shields.io/pypi/pyversions/travertino.svg
     :target: https://pypi.python.org/pypi/travertino
 
 .. image:: https://img.shields.io/pypi/v/travertino.svg
