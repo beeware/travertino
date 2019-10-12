@@ -17,8 +17,9 @@ Travertino
 .. image:: https://img.shields.io/pypi/l/travertino.svg
     :target: https://github.com/pybee/travertino/blob/master/LICENSE
 
-.. image:: https://beekeeper.beeware.org/projects/beeware/travertino/shield
-    :target: https://beekeeper.beeware.org/projects/beeware/travertino
+.. image:: https://github.com/beeware/travertino/workflows/Build%20status/badge.svg
+   :target: https://github.com/beeware/travertino/actions
+   :alt: Build Status
 
 .. image:: https://badges.gitter.im/pybee/general.svg
     :target: https://gitter.im/pybee/general
