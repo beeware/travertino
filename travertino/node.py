@@ -79,6 +79,37 @@ class Node:
         child._parent = self
         set_root(child, self.root)
 
+    def insert(self, index, child):
+        """Insert a node as a child of this one.
+        Args:
+            index: Index of child position.
+            child: A node to add as a child to this node.
+
+        Raises:
+            ValueError: If this node is a leaf, and cannot have children.
+        """
+        if self._children is None:
+            raise ValueError('Cannot add children')
+
+        self._children.insert(index, child)
+        child._parent = self
+        set_root(child, self.root)
+
+    def remove(self, child):
+        """Remove a node as a child of this one.
+        Args:
+            child: A node to add as a child to this node.
+
+        Raises:
+            ValueError: If this node is a leaf, and cannot have children.
+        """
+        if self._children is None:
+            raise ValueError('Cannot add children')
+
+        self._children.remove(child)
+        child._parent = None
+        set_root(child, None)
+
     def refresh(self, viewport):
         """Refresh the layout and appearance of the tree this node is contained in."""
         if self._root:
