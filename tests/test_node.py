@@ -143,3 +143,51 @@ class NodeTests(TestCase):
         self.assertEqual(child1.applicator.tasks, [])
         self.assertEqual(child2.applicator.tasks, [])
         self.assertEqual(child3.applicator.tasks, [])
+
+    def test_add(self):
+        "Nodes can be added as children to another node"
+
+        style = Style()
+        node = Node(style=style, children=[])
+
+        child = Node(style=style)
+        node.add(child)
+
+        self.assertTrue(child in node.children)
+        self.assertEqual(child.parent, node)
+        self.assertEqual(child.root, node.root)
+
+    def test_insert(self):
+        "Node can be inserted at a specific position as a child"
+
+        style = Style()
+        child1 = Node(style=style)
+        child2 = Node(style=style)
+        child3 = Node(style=style)
+        node = Node(style=style, children=[child1, child2, child3])
+
+        child4 = Node(style=style)
+
+        index = 2
+        node.insert(index, child4)
+
+        self.assertTrue(child4 in node.children)
+        self.assertEqual(child4.parent, node)
+        self.assertEqual(child4.root, node.root)
+
+        self.assertEqual(node.children.index(child4), index)
+
+    def test_remove(self):
+        "Children can be removed from node"
+
+        style = Style()
+        child1 = Node(style=style)
+        child2 = Node(style=style)
+        child3 = Node(style=style)
+        node = Node(style=style, children=[child1, child2, child3])
+
+        node.remove(child1)
+
+        self.assertFalse(child1 in node.children)
+        self.assertEqual(child1.parent, None)
+        self.assertEqual(child1.root, child1)
