@@ -11,7 +11,7 @@ def reapply(self):
 def update(self, **styles):
     "Set multiple styles on the style definition."
     for name, value in styles.items():
-        name = name.replace('-', '_')
+        name = name.replace("-", "_")
         if not (name in self._PROPERTIES or name in self._DIRECTIONAL_PROPERTIES):
             raise NameError("Unknown style '{}'".format(name))
 
@@ -28,14 +28,14 @@ def copy(self, applicator=None):
 
 
 def get_item(self, name):
-    name = name.replace('-', '_')
+    name = name.replace("-", "_")
     if name in self._PROPERTIES:
         return getattr(self, name)
     raise KeyError(name)
 
 
 def set_item(self, name, value):
-    name = name.replace('-', '_')
+    name = name.replace("-", "_")
     if name in self._PROPERTIES:
         setattr(self, name, value)
     else:
@@ -43,7 +43,7 @@ def set_item(self, name, value):
 
 
 def del_item(self, name):
-    name = name.replace('-', '_')
+    name = name.replace("-", "_")
     if name in self._PROPERTIES:
         delattr(self, name)
     else:
@@ -54,7 +54,7 @@ def items(self):
     result = []
     for name in self._PROPERTIES:
         try:
-            result.append((name, getattr(self, '_%s' % name)))
+            result.append((name, getattr(self, "_%s" % name)))
         except AttributeError:
             pass
     return result
@@ -75,7 +75,6 @@ def str_impl(self):
 
 
 def init_impl(style_properties, directional_properties, post_init=None):
-
     def init(self, **kwargs):
         for prop_name, prop in style_properties.items():
             if prop_name in kwargs:
@@ -96,7 +95,7 @@ def style(cls):
     cls._PROPERTIES = []
     cls._DIRECTIONAL_PROPERTIES = []
     if not hasattr(cls, "apply"):
-        raise AttributeError('Style must define an apply method')
+        raise AttributeError("Style must define an apply method")
 
     style_properties = {}
     directional_properties = {}
@@ -106,9 +105,11 @@ def style(cls):
             setattr(
                 cls,
                 key,
-                property(fget=value.getter(key),
-                         fset=value.setter(key),
-                         fdel=value.deleter(key))
+                property(
+                    fget=value.getter(key),
+                    fset=value.setter(key),
+                    fdel=value.deleter(key),
+                ),
             )
             cls._PROPERTIES.append(key)
         if isinstance(value, directional_property):
@@ -116,9 +117,11 @@ def style(cls):
             setattr(
                 cls,
                 key,
-                property(fget=value.getter(key),
-                         fset=value.setter(key),
-                         fdel=value.deleter(key))
+                property(
+                    fget=value.getter(key),
+                    fset=value.setter(key),
+                    fdel=value.deleter(key),
+                ),
             )
             cls._DIRECTIONAL_PROPERTIES.append(key)
 
@@ -132,7 +135,9 @@ def style(cls):
     cls.keys = keys
     cls.__str__ = str_impl
     post_init = getattr(cls, "__post_init__", None)
-    cls.__init__ = init_impl(style_properties=style_properties,
-                             directional_properties=directional_properties,
-                             post_init=post_init)
+    cls.__init__ = init_impl(
+        style_properties=style_properties,
+        directional_properties=directional_properties,
+        post_init=post_init,
+    )
     return cls
