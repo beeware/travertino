@@ -1,12 +1,16 @@
 from unittest import TestCase
+from unittest.mock import Mock
 
-from travertino.declaration import BaseStyle
 from travertino.layout import BaseBox, Viewport
 from travertino.node import Node
 from travertino.size import BaseIntrinsicSize
+from travertino.style_decorator import style
 
 
-class Style(BaseStyle):
+@style
+class Style:
+    apply = Mock()
+
     class IntrinsicSize(BaseIntrinsicSize):
         pass
 
