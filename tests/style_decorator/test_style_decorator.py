@@ -271,7 +271,7 @@ class DeclarationTests(TestCase):
         self.assertEqual(node.style.thing_bottom, 10)
         self.assertEqual(node.style.thing_left, 10)
         node.style.apply.assert_has_calls(
-            [call("thing_right", 10), call("thing_bottom", 10), call("thing_left", 10),]
+            [call("thing_right", 10), call("thing_bottom", 10), call("thing_left", 10)]
         )
 
         # Clear the applicator mock
@@ -375,7 +375,7 @@ class DeclarationTests(TestCase):
         self.assertEqual(node.style.thing_bottom, 0)
         self.assertEqual(node.style.thing_left, 0)
         node.style.apply.assert_has_calls(
-            [call("thing_right", 0), call("thing_bottom", 0), call("thing_left", 0),]
+            [call("thing_right", 0), call("thing_bottom", 0), call("thing_left", 0)]
         )
 
     def test_set_multiple_properties(self):
@@ -388,7 +388,7 @@ class DeclarationTests(TestCase):
         self.assertEqual(node.style.explicit_none, 10)
         self.assertEqual(node.style.explicit_value, 20)
         node.style.apply.assert_has_calls(
-            [call("explicit_value", 20), call("explicit_none", 10),], any_order=True
+            [call("explicit_value", 20), call("explicit_none", 10)], any_order=True
         )
 
         # Set a different pair of properties
@@ -398,7 +398,7 @@ class DeclarationTests(TestCase):
         self.assertEqual(node.style.explicit_value, 30)
         self.assertEqual(node.style.explicit_none, 10)
         node.style.apply.assert_has_calls(
-            [call("explicit_const", VALUE2), call("explicit_value", 30),],
+            [call("explicit_const", VALUE2), call("explicit_value", 30)],
             any_order=True,
         )
 
