@@ -10,3 +10,5 @@ distribute-*
 .coverage
 .tox
 .vscode
+venv
+.idea
