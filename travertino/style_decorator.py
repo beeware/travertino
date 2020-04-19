@@ -69,8 +69,8 @@ def keys(self):
 ######################################################################
 def str_impl(self):
     return "; ".join(
-        "%s: %s" % (name.replace("_", "-"), getattr(self, name))
-        for name in self._PROPERTIES
+        "{}: {}".format(name.replace("_", "-"), getattr(self, name))
+        for name in sorted(self._PROPERTIES)
     )
 
 

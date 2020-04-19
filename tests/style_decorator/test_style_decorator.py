@@ -421,13 +421,13 @@ class DeclarationTests(TestCase):
         self.assertEqual(
             str(node.style),
             "explicit-const: value2; "
-            "explicit-value: 20; "
             "explicit-none: None; "
+            "explicit-value: 20; "
             "implicit: None; "
-            "thing-top: 30; "
-            "thing-right: 40; "
             "thing-bottom: 50; "
-            "thing-left: 60",
+            "thing-left: 60; "
+            "thing-right: 40; "
+            "thing-top: 30"
         )
 
     def test_dict(self):
