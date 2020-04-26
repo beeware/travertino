@@ -1,0 +1,1 @@
+Added CI checks for Towncrier, MANIFEST.in, and Twine packaging; replaced Beefore with flake8.
