@@ -1,0 +1,1 @@
+Added the ability to add, insert and remove children from a node tree.
