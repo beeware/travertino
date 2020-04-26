@@ -1,4 +1,6 @@
-from .constants import *  # NOQA
+# flake8: NOQA: F405
+from .constants import *
+
 
 class Color:
     "A base class for all colorspace representations"
@@ -52,7 +54,7 @@ class hsla(Color):
     def __init__(self, h, s, l, a=1.0):
         self.h = h
         self.s = s
-        self.l = l
+        self.l = l  # NOQA; E741
         self.a = a
 
     def __hash__(self):
@@ -348,3 +350,8 @@ NAMED_COLOR = {
     YELLOW: rgb(0xFF, 0xFF, 0x00),
     YELLOWGREEN: rgb(0x9A, 0xCD, 0x32),
 }
+
+
+__all__ = [
+    'Color', 'rgba', 'rgb', 'hsla', 'hsl', 'color', 'NAMED_COLOR', 'TRANSPARENT'
+] + [name.upper() for name in NAMED_COLOR.keys()]

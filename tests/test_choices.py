@@ -263,7 +263,6 @@ class PropertyChoiceTests(TestCase):
         obj.prop = 'b'
         self.assert_property(obj, 'b')
 
-
         # Check the error message
         try:
             obj.prop = 'invalid'
@@ -278,10 +277,14 @@ class PropertyChoiceTests(TestCase):
         class MyObject(BaseStyle):
             def __init__(self):
                 self.apply = Mock()
-        MyObject.validated_property('prop', choices=Choices(
+        MyObject.validated_property(
+            'prop',
+            choices=Choices(
                 'a', 'b', None,
                 number=True, color=True
-            ), initial=None)
+            ),
+            initial=None
+        )
 
         obj = MyObject()
 

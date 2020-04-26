@@ -91,7 +91,7 @@ class BaseStyle:
         "Set multiple styles on the style definition."
         for name, value in styles.items():
             name = name.replace('-', '_')
-            if not name in self._ALL_PROPERTIES.get(self.__class__, set()):
+            if name not in self._ALL_PROPERTIES.get(self.__class__, set()):
                 raise NameError("Unknown style '%s'" % name)
 
             setattr(self, name, value)
@@ -233,7 +233,11 @@ class BaseStyle:
                     setattr(self, name % '_bottom', value[0])
                     setattr(self, name % '_left', value[0])
                 else:
-                    raise ValueError("Invalid value for '{}'; value must be an number, or a 1-4 tuple.".format(name % ''))
+                    raise ValueError(
+                        "Invalid value for '{}'; value must be an number, or a 1-4 tuple.".format(
+                            name % ''
+                        )
+                    )
             else:
                 setattr(self, name % '_top', value)
                 setattr(self, name % '_right', value)
@@ -278,4 +282,3 @@ class BaseStyle:
 
     #     _PROPERTIES.add(name)
     #     return property(getter, setter, deleter)
-
