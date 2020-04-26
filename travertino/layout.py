@@ -119,11 +119,10 @@ class BaseBox:
 
     @content_top.setter
     def content_top(self, value):
-        if value != self._content_top:
-            self._content_top = value
-            for child in self.node.children:
-                if child.layout:
-                    child.layout._origin_top = self.absolute_content_top
+        self._content_top = value
+        for child in self.node.children:
+            if child.layout:
+                child.layout._origin_top = self.absolute_content_top
 
     @property
     def content_left(self):
@@ -131,11 +130,10 @@ class BaseBox:
 
     @content_left.setter
     def content_left(self, value):
-        if value != self._content_left:
-            self._content_left = value
-            for child in self.node.children:
-                if child.layout:
-                    child.layout._origin_left = self.absolute_content_left
+        self._content_left = value
+        for child in self.node.children:
+            if child.layout:
+                child.layout._origin_left = self.absolute_content_left
 
     ######################################################################
     # Absolute content box position
