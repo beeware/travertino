@@ -73,7 +73,6 @@ class DeclarationTests(TestCase):
             call('thing_bottom', 0),
         ], any_order=True)
 
-
     def test_property_with_explicit_const(self):
         node = TestNode()
 
@@ -377,10 +376,13 @@ class DeclarationTests(TestCase):
         self.assertIs(node.style.explicit_const, VALUE1)
         self.assertEqual(node.style.explicit_none, 10)
         self.assertEqual(node.style.explicit_value, 20)
-        node.style.apply.assert_has_calls([
+        node.style.apply.assert_has_calls(
+            [
                 call('explicit_value', 20),
                 call('explicit_none', 10),
-            ], any_order=True)
+            ],
+            any_order=True
+        )
 
         # Set a different pair of properties
         node.style.update(explicit_const=VALUE2, explicit_value=30)
@@ -388,10 +390,13 @@ class DeclarationTests(TestCase):
         self.assertIs(node.style.explicit_const, VALUE2)
         self.assertEqual(node.style.explicit_value, 30)
         self.assertEqual(node.style.explicit_none, 10)
-        node.style.apply.assert_has_calls([
+        node.style.apply.assert_has_calls(
+            [
                 call('explicit_const', VALUE2),
                 call('explicit_value', 30),
-            ], any_order=True)
+            ],
+            any_order=True
+        )
 
         # Clear the applicator mock
         node.style.apply.reset_mock()

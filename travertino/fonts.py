@@ -3,6 +3,7 @@ from .constants import (
     ITALIC, OBLIQUE, SMALL_CAPS, BOLD
 )
 
+
 class Font:
     def __init__(self, family, size, style=NORMAL, variant=NORMAL, weight=NORMAL):
         if (family[0] == "'" and family[-1] == "'") or (family[0] == '"' and family[-1] == '"'):
@@ -18,7 +19,7 @@ class Font:
                     self.size = int(size[:-2])
                 else:
                     raise ValueError("Invalid font size {!r}".format(size))
-            except:
+            except Exception:
                 raise ValueError("Invalid font size {!r}".format(size))
         self.style = style if style in FONT_STYLES else NORMAL
         self.variant = variant if variant in FONT_VARIANTS else NORMAL
@@ -118,15 +119,15 @@ def font(value):
                 if variant is not None:
                     raise ValueError("Invalid font declaration '{}'".format(value))
                 if style is None:
-                     style = NORMAL
+                    style = NORMAL
                 variant = part
             elif part in FONT_WEIGHTS:
                 if weight is not None:
                     raise ValueError("Invalid font declaration '{}'".format(value))
                 if style is None:
-                     style = NORMAL
+                    style = NORMAL
                 if variant is None:
-                     variant = NORMAL
+                    variant = NORMAL
                 weight = part
             else:
                 try:

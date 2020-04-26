@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. towncrier release notes start
+
 0.1.2
 -----
 * Added constants for system and message fonts
