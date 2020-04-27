@@ -12,3 +12,5 @@ distribute-*
 .vscode
 venv
 .idea
+pip-wheel-metadata
+
