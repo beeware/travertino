@@ -30,8 +30,12 @@ class Color:
             )
 
     @classmethod
+    def _validate_partial(cls, content_name, value):
+        cls._validate_between(content_name, value, 0, 1)
+
+    @classmethod
     def _validate_alpha(cls, value):
-        cls._validate_between("alpha", value, 0, 1)
+        cls._validate_partial("alpha", value)
 
 
 class rgba(Color):
@@ -73,6 +77,10 @@ class rgb(rgba):
 class hsla(Color):
     "A representation of an HSLA color"
     def __init__(self, h, s, l, a=1.0):
+        self._validate_between("hue", h, 0, 360)
+        self._validate_partial("saturation", s)
+        self._validate_partial("lightness", l)
+        self._validate_alpha(a)
         self.h = h
         self.s = s
         self.l = l  # NOQA; E741
