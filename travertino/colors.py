@@ -20,10 +20,31 @@ class Color:
         except AttributeError:
             return False
 
+    @classmethod
+    def _validate_between(cls, content_name, value, min_value, max_value):
+        if value < min_value or value > max_value:
+            raise ValueError(
+                "{} value should be between {}-{}. Got {}".format(
+                    content_name, min_value, max_value, value
+                )
+            )
+
+    @classmethod
+    def _validate_partial(cls, content_name, value):
+        cls._validate_between(content_name, value, 0, 1)
+
+    @classmethod
+    def _validate_alpha(cls, value):
+        cls._validate_partial("alpha", value)
+
 
 class rgba(Color):
     "A representation of an RGBA color"
     def __init__(self, r, g, b, a):
+        self._validate_rgb("red", r)
+        self._validate_rgb("green", g)
+        self._validate_rgb("blue", b)
+        self._validate_alpha(a)
         self.r = r
         self.g = g
         self.b = b
@@ -34,6 +55,10 @@ class rgba(Color):
 
     def __repr__(self):
         return "rgba({}, {}, {}, {})".format(self.r, self.g, self.b, self.a)
+
+    @classmethod
+    def _validate_rgb(cls, content_name, value):
+        cls._validate_between(content_name, value, 0, 255)
 
     @property
     def rgba(self):
@@ -52,6 +77,10 @@ class rgb(rgba):
 class hsla(Color):
     "A representation of an HSLA color"
     def __init__(self, h, s, l, a=1.0):
+        self._validate_between("hue", h, 0, 360)
+        self._validate_partial("saturation", s)
+        self._validate_partial("lightness", l)
+        self._validate_alpha(a)
         self.h = h
         self.s = s
         self.l = l  # NOQA; E741
