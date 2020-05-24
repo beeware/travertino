@@ -3,7 +3,7 @@ from unittest import TestCase
 from travertino.colors import color, hsl, hsla, rgb, rgba
 
 
-class ColorTests(TestCase):
+class ColorConstructorTests(TestCase):
     def assertEqualColor(self, a, b):
         self.assertEqual(a.rgba.r, b.rgba.r)
         self.assertEqual(a.rgba.g, b.rgba.g)
