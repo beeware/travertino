@@ -1,7 +1,14 @@
 from unittest import TestCase
 
-from travertino.constants import NORMAL, ITALIC, OBLIQUE, SMALL_CAPS, BOLD
-from travertino.fonts import font, Font
+from travertino.constants import (
+    BOLD,
+    ITALIC,
+    NORMAL,
+    OBLIQUE,
+    SMALL_CAPS,
+    SYSTEM_DEFAULT_FONT_SIZE,
+)
+from travertino.fonts import Font, font
 
 
 class FontTests(TestCase):
@@ -63,6 +70,17 @@ class FontTests(TestCase):
         self.assertEqual(
             repr(Font('Comic Sans', 12, style=ITALIC, weight=BOLD)),
             '<Font: italic bold 12pt Comic Sans>'
+        )
+
+        # Check system default size handling
+        self.assertEqual(
+            repr(Font('Comic Sans', SYSTEM_DEFAULT_FONT_SIZE)),
+            '<Font: system default size Comic Sans>'
+        )
+
+        self.assertEqual(
+            repr(Font('Comic Sans', SYSTEM_DEFAULT_FONT_SIZE, style=ITALIC)),
+            '<Font: italic system default size Comic Sans>'
         )
 
     def test_simple_construction(self):

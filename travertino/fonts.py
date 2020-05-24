@@ -1,6 +1,13 @@
 from .constants import (
-    NORMAL, FONT_STYLES, FONT_VARIANTS, FONT_WEIGHTS,
-    ITALIC, OBLIQUE, SMALL_CAPS, BOLD
+    BOLD,
+    FONT_STYLES,
+    FONT_VARIANTS,
+    FONT_WEIGHTS,
+    ITALIC,
+    NORMAL,
+    OBLIQUE,
+    SMALL_CAPS,
+    SYSTEM_DEFAULT_FONT_SIZE,
 )
 
 
@@ -29,11 +36,11 @@ class Font:
         return hash(('FONT', self.family, self.size, self.style, self.variant, self.weight))
 
     def __repr__(self):
-        return '<Font: {}{}{}{}pt {}>'.format(
+        return '<Font: {}{}{}{} {}>'.format(
             '' if self.style is NORMAL else (self.style + ' '),
             '' if self.variant is NORMAL else (self.variant + ' '),
             '' if self.weight is NORMAL else (self.weight + ' '),
-            self.size,
+            'system default size' if self.size == SYSTEM_DEFAULT_FONT_SIZE else '{}pt'.format(self.size),
             self.family
         )
 
