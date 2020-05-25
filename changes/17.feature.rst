@@ -1,1 +1,0 @@
-Added color validation in rgba and hsla constructors

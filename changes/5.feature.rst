@@ -1,1 +1,0 @@
-Introduced some constants used by Pack that have more general uses.
