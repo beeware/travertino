@@ -35,7 +35,7 @@ interfaces, including:
 Usage
 -----
 
-Install Travatino:
+Install Travertino:
 
     $ pip install travertino
 
