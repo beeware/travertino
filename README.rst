@@ -35,13 +35,13 @@ interfaces, including:
 Usage
 -----
 
-Install Travatino:
+Install Travertino:
 
     $ pip install travertino
 
 Then in your python code, import and use it::
 
-    >>> from travertino import color, rgb,
+    >>> from travertino.colors import color, rgb,
 
     # Define a new color as an RGB triple
     >>> red = rgb(0xff, 0x00, 0x00)
