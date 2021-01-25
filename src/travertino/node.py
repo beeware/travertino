@@ -110,6 +110,20 @@ class Node:
         child._parent = None
         set_root(child, None)
 
+    def clear(self):
+        """Clear all children from this node.
+
+        Raises:
+            ValueError: If this node is a leaf, and cannot have children.
+        """
+        if self._children is None:
+            raise ValueError('Cannot remove children')
+
+        for child in self._children:
+            child._parent = None
+            set_root(child, None)
+        self._children = []
+
     def refresh(self, viewport):
         """Refresh the layout and appearance of the tree this node is contained in."""
         if self._root:
