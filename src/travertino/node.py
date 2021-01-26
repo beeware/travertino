@@ -108,7 +108,8 @@ class Node:
             ValueError: If this node is a leaf, and cannot have children.
         """
         if self._children is None:
-            raise ValueError('Cannot remove children')
+            # This is a leaf, so do nothing.
+            return
 
         for child in self._children:
             child._parent = None
@@ -124,9 +125,8 @@ class Node:
             if self.applicator:
                 self.applicator.set_bounds()
 
-    @classmethod
-    def _set_root(cls, node, root):
+    def _set_root(self, node, root):
         # Propagate a root node change through a tree.
         node._root = root
         for child in node.children:
-            cls._set_root(child, root)
+            self._set_root(child, root)
