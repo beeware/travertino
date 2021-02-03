@@ -54,7 +54,7 @@ class rgba(Color):
         return hash(('RGBA-color', self.r, self.g, self.b, self.a))
 
     def __repr__(self):
-        return "rgba({}, {}, {}, {})".format(self.r, self.g, self.b, self.a)
+        return f"rgba({self.r}, {self.g}, {self.b}, {self.a})"
 
     @classmethod
     def _validate_rgb(cls, content_name, value):
@@ -71,7 +71,7 @@ class rgb(rgba):
         super().__init__(r, g, b, 1.0)
 
     def __repr__(self):
-        return "rgb({}, {}, {})".format(self.r, self.g, self.b)
+        return f"rgb({self.r}, {self.g}, {self.b})"
 
 
 class hsla(Color):
@@ -90,7 +90,7 @@ class hsla(Color):
         return hash(('HSLA-color', self.h, self.s, self.l, self.a))
 
     def __repr__(self):
-        return "hsla({}, {}, {}, {})".format(self.h, self.s, self.l, self.a)
+        return f"hsla({self.h}, {self.s}, {self.l}, {self.a})"
 
     @property
     def rgba(self):
@@ -126,7 +126,7 @@ class hsl(hsla):
         super().__init__(h, s, l, 1.0)
 
     def __repr__(self):
-        return "hsl({}, {}, {})".format(self.h, self.s, self.l)
+        return f"hsl({self.h}, {self.s}, {self.l})"
 
 
 def color(value):

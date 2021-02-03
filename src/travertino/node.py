@@ -1,5 +1,3 @@
-
-
 def set_root(node, root):
     # Propegate a root node change through a tree.
     node._root = root

@@ -54,7 +54,7 @@ class Choices:
             if value == const:
                 return const
 
-        raise ValueError("'{0}' is not a valid initial value".format(value))
+        raise ValueError(f"'{value}' is not a valid initial value")
 
     def __str__(self):
         return ", ".join(self._options)
@@ -158,7 +158,7 @@ class BaseStyle:
                 pass
 
         return "; ".join(
-            "%s: %s" % (name, value)
+            f"{name}: {value}"
             for name, value in sorted(non_default)
         )
 
@@ -168,7 +168,7 @@ class BaseStyle:
         try:
             initial = choices.validate(initial)
         except ValueError:
-            raise ValueError("Invalid initial value '{}' for property '{}'".format(initial, name))
+            raise ValueError(f"Invalid initial value '{initial}' for property '{name}'")
 
         def getter(self):
             return getattr(self, '_%s' % name, initial)

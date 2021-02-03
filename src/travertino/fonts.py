@@ -25,9 +25,9 @@ class Font:
                 if size.strip().endswith('pt'):
                     self.size = int(size[:-2])
                 else:
-                    raise ValueError("Invalid font size {!r}".format(size))
+                    raise ValueError(f"Invalid font size {size!r}")
             except Exception:
-                raise ValueError("Invalid font size {!r}".format(size))
+                raise ValueError(f"Invalid font size {size!r}")
         self.style = style if style in FONT_STYLES else NORMAL
         self.variant = variant if variant in FONT_VARIANTS else NORMAL
         self.weight = weight if weight in FONT_WEIGHTS else NORMAL
@@ -40,7 +40,7 @@ class Font:
             '' if self.style is NORMAL else (self.style + ' '),
             '' if self.variant is NORMAL else (self.variant + ' '),
             '' if self.weight is NORMAL else (self.weight + ' '),
-            'system default size' if self.size == SYSTEM_DEFAULT_FONT_SIZE else '{}pt'.format(self.size),
+            'system default size' if self.size == SYSTEM_DEFAULT_FONT_SIZE else f'{self.size}pt',
             self.family
         )
 
@@ -120,17 +120,17 @@ def font(value):
                     weight = NORMAL
             elif part in FONT_STYLES:
                 if style is not None:
-                    raise ValueError("Invalid font declaration '{}'".format(value))
+                    raise ValueError(f"Invalid font declaration '{value}'")
                 style = part
             elif part in FONT_VARIANTS:
                 if variant is not None:
-                    raise ValueError("Invalid font declaration '{}'".format(value))
+                    raise ValueError(f"Invalid font declaration '{value}'")
                 if style is None:
                     style = NORMAL
                 variant = part
             elif part in FONT_WEIGHTS:
                 if weight is not None:
-                    raise ValueError("Invalid font declaration '{}'".format(value))
+                    raise ValueError(f"Invalid font declaration '{value}'")
                 if style is None:
                     style = NORMAL
                 if variant is None:
@@ -143,7 +143,7 @@ def font(value):
                     else:
                         size = int(part)
                 except ValueError:
-                    raise ValueError("Invalid size in font declaration '{}'".format(value))
+                    raise ValueError(f"Invalid size in font declaration '{value}'")
 
                 if parts[0] == 'pt':
                     parts.pop(0)

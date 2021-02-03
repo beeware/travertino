@@ -1,11 +1,10 @@
-
 class at_least:
     "An annotation to wrap around a value to describe that it is a minimum bound"
     def __init__(self, value):
         self.value = value
 
     def __repr__(self):
-        return 'at least {0}'.format(self.value)
+        return f'at least {self.value}'
 
     def __eq__(self, other):
         try:
@@ -29,7 +28,7 @@ class BaseIntrinsicSize:
         self._ratio = None
 
     def __repr__(self):
-        return '({}, {})'.format(self.width, self.height)
+        return f'({self.width}, {self.height})'
 
     @property
     def width(self):
