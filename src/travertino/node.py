@@ -1,3 +1,4 @@
+
 class Node:
     def __init__(self, style, applicator=None, children=None):
         self.applicator = applicator
