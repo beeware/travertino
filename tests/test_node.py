@@ -191,3 +191,24 @@ class NodeTests(TestCase):
         self.assertFalse(child1 in node.children)
         self.assertEqual(child1.parent, None)
         self.assertEqual(child1.root, child1)
+
+    def test_clear(self):
+        "Node can be inserted at a specific position as a child"
+        style = Style()
+        children = [Node(style=style), Node(style=style), Node(style=style)]
+        node = Node(style=style, children=children)
+
+        for child in children:
+            self.assertTrue(child in node.children)
+            self.assertEqual(child.parent, node)
+            self.assertEqual(child.root, node)
+        self.assertEqual(node.children, children)
+
+        node.clear()
+
+        for child in children:
+            self.assertFalse(child in node.children)
+            self.assertEqual(child.parent, None)
+            self.assertEqual(child.root, child)
+
+        self.assertEqual(node.children, [])
