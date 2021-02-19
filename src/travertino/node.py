@@ -1,12 +1,3 @@
-
-
-def set_root(node, root):
-    # Propegate a root node change through a tree.
-    node._root = root
-    for child in node.children:
-        set_root(child, root)
-
-
 class Node:
     def __init__(self, style, applicator=None, children=None):
         self.applicator = applicator
@@ -77,7 +68,7 @@ class Node:
 
         self._children.append(child)
         child._parent = self
-        set_root(child, self.root)
+        self._set_root(child, self.root)
 
     def insert(self, index, child):
         """Insert a node as a child of this one.
@@ -93,7 +84,7 @@ class Node:
 
         self._children.insert(index, child)
         child._parent = self
-        set_root(child, self.root)
+        self._set_root(child, self.root)
 
     def remove(self, child):
         """Remove child from this node.
@@ -108,7 +99,22 @@ class Node:
 
         self._children.remove(child)
         child._parent = None
-        set_root(child, None)
+        self._set_root(child, None)
+
+    def clear(self):
+        """Clear all children from this node.
+
+        Raises:
+            ValueError: If this node is a leaf, and cannot have children.
+        """
+        if self._children is None:
+            # This is a leaf, so do nothing.
+            return
+
+        for child in self._children:
+            child._parent = None
+            self._set_root(child, None)
+        self._children = []
 
     def refresh(self, viewport):
         """Refresh the layout and appearance of the tree this node is contained in."""
@@ -118,3 +124,9 @@ class Node:
             self.style.layout(self, viewport)
             if self.applicator:
                 self.applicator.set_bounds()
+
+    def _set_root(self, node, root):
+        # Propagate a root node change through a tree.
+        node._root = root
+        for child in node.children:
+            self._set_root(child, root)
