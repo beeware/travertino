@@ -1,4 +1,3 @@
-
 class Node:
     def __init__(self, style, applicator=None, children=None):
         self.applicator = applicator
@@ -26,7 +25,7 @@ class Node:
 
     @property
     def parent(self):
-        """ The parent of this node.
+        """The parent of this node.
 
         Returns:
             The parent of this node. Returns None if this node is the root node.
@@ -35,7 +34,7 @@ class Node:
 
     @property
     def children(self):
-        """ The children of this node.
+        """The children of this node.
         This *always* returns a list, even if the node is a leaf
         and cannot have children.
 
@@ -65,7 +64,7 @@ class Node:
             ValueError: If this node is a leaf, and cannot have children.
         """
         if self._children is None:
-            raise ValueError('Cannot add children')
+            raise ValueError("Cannot add children")
 
         self._children.append(child)
         child._parent = self
@@ -81,7 +80,7 @@ class Node:
             ValueError: If this node is a leaf, and cannot have children.
         """
         if self._children is None:
-            raise ValueError('Cannot insert child')
+            raise ValueError("Cannot insert child")
 
         self._children.insert(index, child)
         child._parent = self
@@ -96,7 +95,7 @@ class Node:
             ValueError: If this node is a leaf, and cannot have children.
         """
         if self._children is None:
-            raise ValueError('Cannot remove children')
+            raise ValueError("Cannot remove children")
 
         self._children.remove(child)
         child._parent = None

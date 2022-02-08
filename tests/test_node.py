@@ -105,14 +105,18 @@ class NodeTests(TestCase):
                 self.node = node
 
             def set_bounds(self):
-                self.tasks.append((self.node, self.node.layout.content_width, self.node.layout.content_height))
+                self.tasks.append(
+                    (
+                        self.node,
+                        self.node.layout.content_width,
+                        self.node.layout.content_height,
+                    )
+                )
 
         class TestNode(Node):
             def __init__(self, style, children=None):
                 super().__init__(
-                    style=style,
-                    applicator=Applicator(self),
-                    children=children
+                    style=style, applicator=Applicator(self), children=children
                 )
 
         # Define a simple 2 level tree of nodes.

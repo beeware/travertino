@@ -1,10 +1,11 @@
 class at_least:
     "An annotation to wrap around a value to describe that it is a minimum bound"
+
     def __init__(self, value):
         self.value = value
 
     def __repr__(self):
-        return f'at least {self.value}'
+        return f"at least {self.value}"
 
     def __eq__(self, other):
         try:
@@ -20,6 +21,7 @@ class BaseIntrinsicSize:
     height: The height of the node.
     ratio: The height between height and width. width = height * ratio
     """
+
     def __init__(self, width=None, height=None, ratio=None, layout=None):
         self._layout = layout
         self._width = width
@@ -28,7 +30,7 @@ class BaseIntrinsicSize:
         self._ratio = None
 
     def __repr__(self):
-        return f'({self.width}, {self.height})'
+        return f"({self.width}, {self.height})"
 
     @property
     def width(self):

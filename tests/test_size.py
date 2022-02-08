@@ -22,12 +22,12 @@ class SizeTests(TestCase):
         self.assertSize(self.size, (1, 2, 0.1))
 
     def test_at_least_repr(self):
-        self.assertEqual(repr(at_least(10)), 'at least 10')
+        self.assertEqual(repr(at_least(10)), "at least 10")
 
     def test_size_repr(self):
-        self.assertEqual(repr(self.size), '(1, 2)')
+        self.assertEqual(repr(self.size), "(1, 2)")
         self.size.width = at_least(10)
-        self.assertEqual(repr(self.size), '(at least 10, 2)')
+        self.assertEqual(repr(self.size), "(at least 10, 2)")
 
     def test_set_width(self):
         self.size.width = 10

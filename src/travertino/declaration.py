@@ -3,9 +3,16 @@ from .colors import color
 
 class Choices:
     "A class to define allowable data types for a property"
+
     def __init__(
-            self, *constants, default=False,
-            string=False, integer=False, number=False, color=False):
+        self,
+        *constants,
+        default=False,
+        string=False,
+        integer=False,
+        number=False,
+        color=False,
+    ):
         self.constants = set(constants)
         self.default = default
 
@@ -14,7 +21,7 @@ class Choices:
         self.number = number
         self.color = color
 
-        self._options = sorted(str(c).lower().replace('_', '-') for c in self.constants)
+        self._options = sorted(str(c).lower().replace("_", "-") for c in self.constants)
         if self.string:
             self._options.append("<string>")
         if self.integer:
@@ -48,7 +55,7 @@ class Choices:
                 return color(value)
             except ValueError:
                 pass
-        if value == 'none':
+        if value == "none":
             value = None
         for const in self.constants:
             if value == const:
@@ -65,6 +72,7 @@ class BaseStyle:
 
     Exposes a dict-like interface.
     """
+
     _PROPERTIES = {}
     _ALL_PROPERTIES = {}
 
@@ -77,7 +85,9 @@ class BaseStyle:
     ######################################################################
 
     def apply(self, property, value):
-        raise NotImplementedError('Style must define an apply method')  # pragma: no cover
+        raise NotImplementedError(
+            "Style must define an apply method"
+        )  # pragma: no cover
 
     ######################################################################
     # Provide a dict-like interface
@@ -90,7 +100,7 @@ class BaseStyle:
     def update(self, **styles):
         "Set multiple styles on the style definition."
         for name, value in styles.items():
-            name = name.replace('-', '_')
+            name = name.replace("-", "_")
             if name not in self._ALL_PROPERTIES.get(self.__class__, set()):
                 raise NameError("Unknown style '%s'" % name)
 
@@ -102,26 +112,26 @@ class BaseStyle:
         dup._applicator = applicator
         for style in self._PROPERTIES.get(self.__class__, set()):
             try:
-                setattr(dup, style, getattr(self, '_%s' % style))
+                setattr(dup, style, getattr(self, "_%s" % style))
             except AttributeError:
                 pass
         return dup
 
     def __getitem__(self, name):
-        name = name.replace('-', '_')
+        name = name.replace("-", "_")
         if name in self._PROPERTIES.get(self.__class__, set()):
             return getattr(self, name)
         raise KeyError(name)
 
     def __setitem__(self, name, value):
-        name = name.replace('-', '_')
+        name = name.replace("-", "_")
         if name in self._PROPERTIES.get(self.__class__, set()):
             setattr(self, name, value)
         else:
             raise KeyError(name)
 
     def __delitem__(self, name):
-        name = name.replace('-', '_')
+        name = name.replace("-", "_")
         if name in self._PROPERTIES.get(self.__class__, set()):
             delattr(self, name)
         else:
@@ -131,7 +141,7 @@ class BaseStyle:
         result = []
         for name in self._PROPERTIES.get(self.__class__, set()):
             try:
-                result.append((name, getattr(self, '_%s' % name)))
+                result.append((name, getattr(self, "_%s" % name)))
             except AttributeError:
                 pass
         return result
@@ -139,7 +149,7 @@ class BaseStyle:
     def keys(self):
         result = set()
         for name in self._PROPERTIES.get(self.__class__, set()):
-            if hasattr(self, '_%s' % name):
+            if hasattr(self, "_%s" % name):
                 result.add(name)
         return result
 
@@ -150,17 +160,13 @@ class BaseStyle:
         non_default = []
         for name in self._PROPERTIES.get(self.__class__, set()):
             try:
-                non_default.append((
-                    name.replace('_', '-'),
-                    getattr(self, '_%s' % name)
-                ))
+                non_default.append(
+                    (name.replace("_", "-"), getattr(self, "_%s" % name))
+                )
             except AttributeError:
                 pass
 
-        return "; ".join(
-            f"{name}: {value}"
-            for name, value in sorted(non_default)
-        )
+        return "; ".join(f"{name}: {value}" for name, value in sorted(non_default))
 
     @classmethod
     def validated_property(cls, name, choices, initial=None):
@@ -171,24 +177,26 @@ class BaseStyle:
             raise ValueError(f"Invalid initial value '{initial}' for property '{name}'")
 
         def getter(self):
-            return getattr(self, '_%s' % name, initial)
+            return getattr(self, "_%s" % name, initial)
 
         def setter(self, value):
             try:
                 value = choices.validate(value)
             except ValueError:
-                raise ValueError("Invalid value '{}' for property '{}'; Valid values are: {}".format(
-                    value, name, choices
-                ))
+                raise ValueError(
+                    "Invalid value '{}' for property '{}'; Valid values are: {}".format(
+                        value, name, choices
+                    )
+                )
 
-            if value != getattr(self, '_%s' % name, initial):
-                setattr(self, '_%s' % name, value)
+            if value != getattr(self, "_%s" % name, initial):
+                setattr(self, "_%s" % name, value)
                 self.apply(name, value)
 
         def deleter(self):
             try:
-                value = getattr(self, '_%s' % name, initial)
-                delattr(self, '_%s' % name)
+                value = getattr(self, "_%s" % name, initial)
+                delattr(self, "_%s" % name)
                 if value != initial:
                     self.apply(name, initial)
             except AttributeError:
@@ -202,56 +210,57 @@ class BaseStyle:
     @classmethod
     def directional_property(cls, name):
         "Define a property attribute that proxies for top/right/bottom/left alternatives."
+
         def getter(self):
             return (
-                getattr(self, name % '_top'),
-                getattr(self, name % '_right'),
-                getattr(self, name % '_bottom'),
-                getattr(self, name % '_left'),
+                getattr(self, name % "_top"),
+                getattr(self, name % "_right"),
+                getattr(self, name % "_bottom"),
+                getattr(self, name % "_left"),
             )
 
         def setter(self, value):
             if isinstance(value, tuple):
                 if len(value) == 4:
-                    setattr(self, name % '_top', value[0])
-                    setattr(self, name % '_right', value[1])
-                    setattr(self, name % '_bottom', value[2])
-                    setattr(self, name % '_left', value[3])
+                    setattr(self, name % "_top", value[0])
+                    setattr(self, name % "_right", value[1])
+                    setattr(self, name % "_bottom", value[2])
+                    setattr(self, name % "_left", value[3])
                 elif len(value) == 3:
-                    setattr(self, name % '_top', value[0])
-                    setattr(self, name % '_right', value[1])
-                    setattr(self, name % '_bottom', value[2])
-                    setattr(self, name % '_left', value[1])
+                    setattr(self, name % "_top", value[0])
+                    setattr(self, name % "_right", value[1])
+                    setattr(self, name % "_bottom", value[2])
+                    setattr(self, name % "_left", value[1])
                 elif len(value) == 2:
-                    setattr(self, name % '_top', value[0])
-                    setattr(self, name % '_right', value[1])
-                    setattr(self, name % '_bottom', value[0])
-                    setattr(self, name % '_left', value[1])
+                    setattr(self, name % "_top", value[0])
+                    setattr(self, name % "_right", value[1])
+                    setattr(self, name % "_bottom", value[0])
+                    setattr(self, name % "_left", value[1])
                 elif len(value) == 1:
-                    setattr(self, name % '_top', value[0])
-                    setattr(self, name % '_right', value[0])
-                    setattr(self, name % '_bottom', value[0])
-                    setattr(self, name % '_left', value[0])
+                    setattr(self, name % "_top", value[0])
+                    setattr(self, name % "_right", value[0])
+                    setattr(self, name % "_bottom", value[0])
+                    setattr(self, name % "_left", value[0])
                 else:
                     raise ValueError(
                         "Invalid value for '{}'; value must be an number, or a 1-4 tuple.".format(
-                            name % ''
+                            name % ""
                         )
                     )
             else:
-                setattr(self, name % '_top', value)
-                setattr(self, name % '_right', value)
-                setattr(self, name % '_bottom', value)
-                setattr(self, name % '_left', value)
+                setattr(self, name % "_top", value)
+                setattr(self, name % "_right", value)
+                setattr(self, name % "_bottom", value)
+                setattr(self, name % "_left", value)
 
         def deleter(self):
-            delattr(self, name % '_top')
-            delattr(self, name % '_right')
-            delattr(self, name % '_bottom')
-            delattr(self, name % '_left')
+            delattr(self, name % "_top")
+            delattr(self, name % "_right")
+            delattr(self, name % "_bottom")
+            delattr(self, name % "_left")
 
-        cls._ALL_PROPERTIES.setdefault(cls, set()).add(name % '')
-        setattr(cls, name % '', property(getter, setter, deleter))
+        cls._ALL_PROPERTIES.setdefault(cls, set()).add(name % "")
+        setattr(cls, name % "", property(getter, setter, deleter))
 
     # def list_property(name, choices, initial=None):
     #     "Define a property attribute that accepts a list of independently validated values."
