@@ -41,7 +41,12 @@ class RGBColorExceptionTests(TestCase):
 
     def test_negative_blue(self):
         self.assertRaisesRegex(
-            ValueError, "^blue value should be between 0-255. Got -1$", rgb, 120, 10, -1,
+            ValueError,
+            "^blue value should be between 0-255. Got -1$",
+            rgb,
+            120,
+            10,
+            -1,
         )
 
     def test_too_big_blue(self):
@@ -148,7 +153,12 @@ class RGBAColorExceptionTests(TestCase):
 class HSLColorExceptionTests(TestCase):
     def test_negative_hue(self):
         self.assertRaisesRegex(
-            ValueError, "^hue value should be between 0-360. Got -1$", hsl, -1, 0.5, 0.8,
+            ValueError,
+            "^hue value should be between 0-360. Got -1$",
+            hsl,
+            -1,
+            0.5,
+            0.8,
         )
 
     def test_too_big_hue(self):

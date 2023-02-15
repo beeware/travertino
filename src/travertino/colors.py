@@ -110,7 +110,12 @@ class hsla(Color):
         else:
             r, g, b = c + m, m, x + m
 
-        return rgba(round(r * 0xFF), round(g * 0xFF), round(b * 0xFF), self.a,)
+        return rgba(
+            round(r * 0xFF),
+            round(g * 0xFF),
+            round(b * 0xFF),
+            self.a,
+        )
 
 
 class hsl(hsla):
@@ -180,7 +185,12 @@ def color(value):
                 values = value[5:-1].split(",")
                 if len(values) == 4:
                     return rgba(
-                        int(values[0]), int(values[1]), int(values[2]), float(values[3],)
+                        int(values[0]),
+                        int(values[1]),
+                        int(values[2]),
+                        float(
+                            values[3],
+                        ),
                     )
             except ValueError:
                 pass
@@ -188,7 +198,11 @@ def color(value):
             try:
                 values = value[4:-1].split(",")
                 if len(values) == 3:
-                    return rgb(int(values[0]), int(values[1]), int(values[2]),)
+                    return rgb(
+                        int(values[0]),
+                        int(values[1]),
+                        int(values[2]),
+                    )
             except ValueError:
                 pass
 

@@ -4,6 +4,7 @@ include README.rst
 include AUTHORS
 include LICENSE
 include tox.ini
+include .git-blame-ignore-revs
 include .pre-commit-config.yaml
 recursive-include changes *.rst
 recursive-include tests *.py
