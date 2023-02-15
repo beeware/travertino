@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 from travertino.colors import NAMED_COLOR, rgb
-from travertino.constants import TOP, GOLDENROD, REBECCAPURPLE
+from travertino.constants import TOP, GOLDENROD, NONE, REBECCAPURPLE
 from travertino.declaration import Choices, BaseStyle
 
 
@@ -17,19 +17,16 @@ class PropertyChoiceTests(TestCase):
         class MyObject(BaseStyle):
             def __init__(self):
                 self.apply = Mock()
-        MyObject.validated_property('prop', choices=Choices(None), initial=None)
+        MyObject.validated_property('prop', choices=Choices(NONE, REBECCAPURPLE), initial=NONE)
 
         obj = MyObject()
-        self.assertIsNone(obj.prop)
+        self.assert_property(obj, NONE, check_mock=False)
 
         with self.assertRaises(ValueError):
             obj.prop = 10
 
         with self.assertRaises(ValueError):
             obj.prop = 3.14159
-
-        with self.assertRaises(ValueError):
-            obj.prop = REBECCAPURPLE
 
         with self.assertRaises(ValueError):
             obj.prop = '#112233'
@@ -40,11 +37,21 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = 'b'
 
-        obj.prop = None
-        self.assert_property(obj, None, check_mock=False)
+        # Set the property to a different explicit value
+        obj.prop = REBECCAPURPLE
+        self.assert_property(obj, REBECCAPURPLE)
 
-        obj.prop = 'none'
-        self.assert_property(obj, None, check_mock=False)
+        # A Travertino NONE is an explicit value
+        obj.prop = NONE
+        self.assert_property(obj, NONE)
+
+        # Set the property to a different explicit value
+        obj.prop = REBECCAPURPLE
+        self.assert_property(obj, REBECCAPURPLE)
+
+        # A Python None is a reset to initial value
+        obj.prop = None
+        self.assert_property(obj, NONE)
 
         # Check the error message
         try:
@@ -53,7 +60,7 @@ class PropertyChoiceTests(TestCase):
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value 'invalid' for property 'prop'; Valid values are: none"
+                "Invalid value 'invalid' for property prop; Valid values are: none, rebeccapurple"
             )
 
     def test_allow_string(self):
@@ -83,11 +90,13 @@ class PropertyChoiceTests(TestCase):
         obj.prop = 'b'
         self.assert_property(obj, 'b')
 
-        with self.assertRaises(ValueError):
-            obj.prop = None
+        # A Travertino NONE is an explicit string value
+        obj.prop = NONE
+        self.assert_property(obj, NONE)
 
-        obj.prop = 'none'
-        self.assert_property(obj, 'none')
+        # A Python None is a reset to initial value
+        obj.prop = None
+        self.assert_property(obj, 'start')
 
         # Check the error message
         try:
@@ -96,7 +105,7 @@ class PropertyChoiceTests(TestCase):
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value '99' for property 'prop'; Valid values are: <string>"
+                "Invalid value 99 for property prop; Valid values are: <string>"
             )
 
     def test_allow_integer(self):
@@ -128,11 +137,13 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = 'b'
 
+        # A Travertino NONE is an explicit string value
         with self.assertRaises(ValueError):
-            obj.prop = None
+            obj.prop = NONE
 
-        with self.assertRaises(ValueError):
-            obj.prop = 'none'
+        # A Python None is a reset to initial value
+        obj.prop = None
+        self.assert_property(obj, 0)
 
         # Check the error message
         try:
@@ -141,7 +152,7 @@ class PropertyChoiceTests(TestCase):
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value 'invalid' for property 'prop'; Valid values are: <integer>"
+                "Invalid value 'invalid' for property prop; Valid values are: <integer>"
             )
 
     def test_allow_number(self):
@@ -171,11 +182,13 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = 'b'
 
+        # A Travertino NONE is an explicit string value
         with self.assertRaises(ValueError):
-            obj.prop = None
+            obj.prop = NONE
 
-        with self.assertRaises(ValueError):
-            obj.prop = 'none'
+        # A Python None is a reset to initial value
+        obj.prop = None
+        self.assert_property(obj, 0)
 
         # Check the error message
         try:
@@ -184,7 +197,7 @@ class PropertyChoiceTests(TestCase):
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value 'invalid' for property 'prop'; Valid values are: <number>"
+                "Invalid value 'invalid' for property prop; Valid values are: <number>"
             )
 
     def test_allow_color(self):
@@ -214,11 +227,13 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = 'b'
 
+        # A Travertino NONE is an explicit string value
         with self.assertRaises(ValueError):
-            obj.prop = None
+            obj.prop = NONE
 
-        with self.assertRaises(ValueError):
-            obj.prop = 'none'
+        # A Python None is a reset to initial value
+        obj.prop = None
+        self.assert_property(obj, NAMED_COLOR['goldenrod'])
 
         # Check the error message
         try:
@@ -227,14 +242,14 @@ class PropertyChoiceTests(TestCase):
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value 'invalid' for property 'prop'; Valid values are: <color>"
+                "Invalid value 'invalid' for property prop; Valid values are: <color>"
             )
 
     def test_values(self):
         class MyObject(BaseStyle):
             def __init__(self):
                 self.apply = Mock()
-        MyObject.validated_property('prop', choices=Choices('a', 'b', None), initial='a')
+        MyObject.validated_property('prop', choices=Choices('a', 'b', NONE), initial='a')
 
         obj = MyObject()
         self.assertEqual(obj.prop, 'a')
@@ -251,17 +266,15 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = '#112233'
 
-        obj.prop = None
-        self.assert_property(obj, None)
-
-        obj.prop = 'a'
-        self.assert_property(obj, 'a')
-
-        obj.prop = 'none'
-        self.assert_property(obj, None)
+        obj.prop = NONE
+        self.assert_property(obj, NONE)
 
         obj.prop = 'b'
         self.assert_property(obj, 'b')
+
+        # A Python None is a reset to initial value
+        obj.prop = None
+        self.assert_property(obj, 'a')
 
         # Check the error message
         try:
@@ -270,7 +283,7 @@ class PropertyChoiceTests(TestCase):
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value 'invalid' for property 'prop'; Valid values are: a, b, none"
+                "Invalid value 'invalid' for property prop; Valid values are: a, b, none"
             )
 
     def test_multiple_choices(self):
@@ -280,7 +293,7 @@ class PropertyChoiceTests(TestCase):
         MyObject.validated_property(
             'prop',
             choices=Choices(
-                'a', 'b', None,
+                'a', 'b', NONE,
                 number=True, color=True
             ),
             initial=None
@@ -300,17 +313,19 @@ class PropertyChoiceTests(TestCase):
         obj.prop = '#112233'
         self.assert_property(obj, rgb(0x11, 0x22, 0x33))
 
-        obj.prop = None
-        self.assert_property(obj, None)
-
         obj.prop = 'a'
         self.assert_property(obj, 'a')
 
-        obj.prop = 'none'
-        self.assert_property(obj, None)
+        obj.prop = NONE
+        self.assert_property(obj, NONE)
 
         obj.prop = 'b'
         self.assert_property(obj, 'b')
+
+        # A Python None is a reset to initial value;
+        # There's no initial value, so the property is None
+        obj.prop = None
+        self.assertIsNone(obj.prop)
 
         # Check the error message
         try:
@@ -319,7 +334,7 @@ class PropertyChoiceTests(TestCase):
         except ValueError as v:
             self.assertEqual(
                 str(v),
-                "Invalid value 'invalid' for property 'prop'; "
+                "Invalid value 'invalid' for property prop; "
                 "Valid values are: a, b, none, <number>, <color>"
             )
 
@@ -327,7 +342,7 @@ class PropertyChoiceTests(TestCase):
         class MyObject(BaseStyle):
             def __init__(self):
                 self.apply = Mock()
-        MyObject.validated_property('prop', choices=Choices(TOP, None), initial=None)
+        MyObject.validated_property('prop', choices=Choices(TOP, NONE))
 
         obj = MyObject()
 
