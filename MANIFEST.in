@@ -3,9 +3,7 @@ include CONTRIBUTING.md
 include README.rst
 include AUTHORS
 include LICENSE
-include beekeeper.yml
 include tox.ini
+include .pre-commit-config.yaml
 recursive-include changes *.rst
-recursive-include travertino *.py
 recursive-include tests *.py
-recursive-include tests *.json
