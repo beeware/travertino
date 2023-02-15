@@ -24,7 +24,7 @@ Travertino
 .. image:: https://img.shields.io/discord/836455665257021440?label=Discord%20Chat&logo=discord&style=plastic
    :target: https://beeware.org/bee/chat/
    :alt: Discord server
-   
+
 Travertino is a set of constants and utilities for describing user
 interfaces, including:
 

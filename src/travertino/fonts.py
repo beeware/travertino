@@ -13,7 +13,9 @@ from .constants import (
 
 class Font:
     def __init__(self, family, size, style=NORMAL, variant=NORMAL, weight=NORMAL):
-        if (family[0] == "'" and family[-1] == "'") or (family[0] == '"' and family[-1] == '"'):
+        if (family[0] == "'" and family[-1] == "'") or (
+            family[0] == '"' and family[-1] == '"'
+        ):
             self.family = family[1:-1]
         else:
             self.family = family
@@ -22,7 +24,7 @@ class Font:
             self.size = int(size)
         except ValueError:
             try:
-                if size.strip().endswith('pt'):
+                if size.strip().endswith("pt"):
                     self.size = int(size[:-2])
                 else:
                     raise ValueError(f"Invalid font size {size!r}")
@@ -33,15 +35,19 @@ class Font:
         self.weight = weight if weight in FONT_WEIGHTS else NORMAL
 
     def __hash__(self):
-        return hash(('FONT', self.family, self.size, self.style, self.variant, self.weight))
+        return hash(
+            ("FONT", self.family, self.size, self.style, self.variant, self.weight)
+        )
 
     def __repr__(self):
-        return '<Font: {}{}{}{} {}>'.format(
-            '' if self.style is NORMAL else (self.style + ' '),
-            '' if self.variant is NORMAL else (self.variant + ' '),
-            '' if self.weight is NORMAL else (self.weight + ' '),
-            'system default size' if self.size == SYSTEM_DEFAULT_FONT_SIZE else f'{self.size}pt',
-            self.family
+        return "<Font: {}{}{}{} {}>".format(
+            "" if self.style is NORMAL else (self.style + " "),
+            "" if self.variant is NORMAL else (self.variant + " "),
+            "" if self.weight is NORMAL else (self.weight + " "),
+            "system default size"
+            if self.size == SYSTEM_DEFAULT_FONT_SIZE
+            else f"{self.size}pt",
+            self.family,
         )
 
     def __eq__(self, other):
@@ -55,31 +61,65 @@ class Font:
 
     def normal_style(self):
         "Generate a normal style version of this font"
-        return Font(self.family, self.size, style=NORMAL, variant=self.variant, weight=self.weight)
+        return Font(
+            self.family,
+            self.size,
+            style=NORMAL,
+            variant=self.variant,
+            weight=self.weight,
+        )
 
     def italic(self):
         "Generate an italic version of this font"
-        return Font(self.family, self.size, style=ITALIC, variant=self.variant, weight=self.weight)
+        return Font(
+            self.family,
+            self.size,
+            style=ITALIC,
+            variant=self.variant,
+            weight=self.weight,
+        )
 
     def oblique(self):
         "Generate an oblique version of this font"
-        return Font(self.family, self.size, style=OBLIQUE, variant=self.variant, weight=self.weight)
+        return Font(
+            self.family,
+            self.size,
+            style=OBLIQUE,
+            variant=self.variant,
+            weight=self.weight,
+        )
 
     def normal_variant(self):
         "Generate a normal variant of this font"
-        return Font(self.family, self.size, style=self.style, variant=NORMAL, weight=self.weight)
+        return Font(
+            self.family, self.size, style=self.style, variant=NORMAL, weight=self.weight
+        )
 
     def small_caps(self):
         "Generate a small-caps variant of this font"
-        return Font(self.family, self.size, style=self.style, variant=SMALL_CAPS, weight=self.weight)
+        return Font(
+            self.family,
+            self.size,
+            style=self.style,
+            variant=SMALL_CAPS,
+            weight=self.weight,
+        )
 
     def normal_weight(self):
         "Generate a normal weight version of this font"
-        return Font(self.family, self.size, style=self.style, variant=self.variant, weight=NORMAL)
+        return Font(
+            self.family,
+            self.size,
+            style=self.style,
+            variant=self.variant,
+            weight=NORMAL,
+        )
 
     def bold(self):
         "Generate a bold version of this font"
-        return Font(self.family, self.size, style=self.style, variant=self.variant, weight=BOLD)
+        return Font(
+            self.family, self.size, style=self.style, variant=self.variant, weight=BOLD
+        )
 
 
 def font(value):
@@ -102,7 +142,7 @@ def font(value):
         return value
 
     elif isinstance(value, str):
-        parts = value.split(' ')
+        parts = value.split(" ")
 
         style = None
         variant = None
@@ -138,17 +178,17 @@ def font(value):
                 weight = part
             else:
                 try:
-                    if part.endswith('pt'):
+                    if part.endswith("pt"):
                         size = int(part[:-2])
                     else:
                         size = int(part)
                 except ValueError:
                     raise ValueError(f"Invalid size in font declaration '{value}'")
 
-                if parts[0] == 'pt':
+                if parts[0] == "pt":
                     parts.pop(0)
 
-        family = ' '.join(parts)
+        family = " ".join(parts)
         return Font(family, size, style=style, variant=variant, weight=weight)
 
     raise ValueError("Unknown font '%s'" % value)
