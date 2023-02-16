@@ -1,0 +1,1 @@
+Pre-commit was added to the codebase. This introduces black as a coding style.

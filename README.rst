@@ -24,7 +24,7 @@ Travertino
 .. image:: https://img.shields.io/discord/836455665257021440?label=Discord%20Chat&logo=discord&style=plastic
    :target: https://beeware.org/bee/chat/
    :alt: Discord server
-   
+
 Travertino is a set of constants and utilities for describing user
 interfaces, including:
 
@@ -73,6 +73,14 @@ Contributing
 
 If you experience problems with Travertino, `log them on GitHub`_. If you
 want to contribute code, please `fork the code`_ and `submit a pull request`_.
+
+Travertino uses `Pre-commit <https://pre-commit.com/>`__ and  `TownCrier
+<https://pypi.org/project/towncrier/>`__ to help maintain code quality. For
+details on how to use these tools as part of your development environment, see
+the `Briefcase code contribution guide
+<https://briefcase.readthedocs.io/en/stable/how-to/contribute-code.html>`__.
+Although that document is for a different project, the details about setting up
+your development environment are the same.
 
 .. _BeeWare suite: http://beeware.org
 .. _Read The Docs: https://travertino.readthedocs.io

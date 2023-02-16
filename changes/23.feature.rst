@@ -1,1 +1,1 @@
-Node now supports the `clear` method in order to clear all children.
+Node now supports the ``clear`` method in order to clear all children.
