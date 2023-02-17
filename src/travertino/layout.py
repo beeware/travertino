@@ -4,6 +4,7 @@ class Viewport:
     rendered. It stores the size of the surface(in pixels), plus the
     pixel density of the viewport.
     """
+
     def __init__(self, width=0, height=0, dpi=None):
         self.width = width
         self.height = height
@@ -45,10 +46,12 @@ class BaseBox:
         self._reset()
 
     def __repr__(self):
-        return '<{} ({}x{} @ {},{})>'.format(
+        return "<{} ({}x{} @ {},{})>".format(
             self.__class__.__name__,
-            self.content_width, self.content_height,
-            self.absolute_content_left, self.absolute_content_top,
+            self.content_width,
+            self.content_height,
+            self.absolute_content_left,
+            self.absolute_content_top,
         )
 
     def _reset(self):

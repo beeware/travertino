@@ -11,12 +11,7 @@ class Color:
             c1 = self.rgba
             c2 = other.rgba
 
-            return (
-                c1.r == c2.r
-                and c1.g == c2.g
-                and c1.b == c2.b
-                and c1.a == c2.a
-            )
+            return c1.r == c2.r and c1.g == c2.g and c1.b == c2.b and c1.a == c2.a
         except AttributeError:
             return False
 
@@ -40,6 +35,7 @@ class Color:
 
 class rgba(Color):
     "A representation of an RGBA color"
+
     def __init__(self, r, g, b, a):
         self._validate_rgb("red", r)
         self._validate_rgb("green", g)
@@ -51,7 +47,7 @@ class rgba(Color):
         self.a = a
 
     def __hash__(self):
-        return hash(('RGBA-color', self.r, self.g, self.b, self.a))
+        return hash(("RGBA-color", self.r, self.g, self.b, self.a))
 
     def __repr__(self):
         return f"rgba({self.r}, {self.g}, {self.b}, {self.a})"
@@ -67,6 +63,7 @@ class rgba(Color):
 
 class rgb(rgba):
     "A representation of an RGB color"
+
     def __init__(self, r, g, b):
         super().__init__(r, g, b, 1.0)
 
@@ -76,6 +73,7 @@ class rgb(rgba):
 
 class hsla(Color):
     "A representation of an HSLA color"
+
     def __init__(self, h, s, l, a=1.0):
         self._validate_between("hue", h, 0, 360)
         self._validate_partial("saturation", s)
@@ -87,7 +85,7 @@ class hsla(Color):
         self.a = a
 
     def __hash__(self):
-        return hash(('HSLA-color', self.h, self.s, self.l, self.a))
+        return hash(("HSLA-color", self.h, self.s, self.l, self.a))
 
     def __repr__(self):
         return f"hsla({self.h}, {self.s}, {self.l}, {self.a})"
@@ -113,15 +111,16 @@ class hsla(Color):
             r, g, b = c + m, m, x + m
 
         return rgba(
-            round(r * 0xff),
-            round(g * 0xff),
-            round(b * 0xff),
-            self.a
+            round(r * 0xFF),
+            round(g * 0xFF),
+            round(b * 0xFF),
+            self.a,
         )
 
 
 class hsl(hsla):
     "A representation of an HSL color"
+
     def __init__(self, h, s, l):
         super().__init__(h, s, l, 1.0)
 
@@ -154,7 +153,7 @@ def color(value):
         return value
 
     elif isinstance(value, str):
-        if value[0] == '#':
+        if value[0] == "#":
             if len(value) == 4:
                 return rgb(
                     r=int(value[1] + value[1], 16),
@@ -166,7 +165,7 @@ def color(value):
                     r=int(value[1] + value[1], 16),
                     g=int(value[2] + value[2], 16),
                     b=int(value[3] + value[3], 16),
-                    a=int(value[4] + value[4], 16) / 0xff,
+                    a=int(value[4] + value[4], 16) / 0xFF,
                 )
             elif len(value) == 7:
                 return rgb(
@@ -179,44 +178,55 @@ def color(value):
                     r=int(value[1:3], 16),
                     g=int(value[3:5], 16),
                     b=int(value[5:7], 16),
-                    a=int(value[7:9], 16) / 0xff,
+                    a=int(value[7:9], 16) / 0xFF,
                 )
-        elif value.startswith('rgba'):
+        elif value.startswith("rgba"):
             try:
-                values = value[5:-1].split(',')
+                values = value[5:-1].split(",")
                 if len(values) == 4:
-                    return rgba(int(values[0]), int(values[1]), int(values[2]), float(values[3]))
-            except ValueError:
-                pass
-        elif value.startswith('rgb'):
-            try:
-                values = value[4:-1].split(',')
-                if len(values) == 3:
-                    return rgb(int(values[0]), int(values[1]), int(values[2]))
-            except ValueError:
-                pass
-
-        elif value.startswith('hsla'):
-            try:
-                values = value[5:-1].split(',')
-                if len(values) == 4:
-                    return hsla(
+                    return rgba(
                         int(values[0]),
-                        int(values[1].strip().rstrip('%')) / 100.0,
-                        int(values[2].strip().rstrip('%')) / 100.0,
-                        float(values[3])
+                        int(values[1]),
+                        int(values[2]),
+                        float(
+                            values[3],
+                        ),
+                    )
+            except ValueError:
+                pass
+        elif value.startswith("rgb"):
+            try:
+                values = value[4:-1].split(",")
+                if len(values) == 3:
+                    return rgb(
+                        int(values[0]),
+                        int(values[1]),
+                        int(values[2]),
                     )
             except ValueError:
                 pass
 
-        elif value.startswith('hsl'):
+        elif value.startswith("hsla"):
             try:
-                values = value[4:-1].split(',')
+                values = value[5:-1].split(",")
+                if len(values) == 4:
+                    return hsla(
+                        int(values[0]),
+                        int(values[1].strip().rstrip("%")) / 100.0,
+                        int(values[2].strip().rstrip("%")) / 100.0,
+                        float(values[3]),
+                    )
+            except ValueError:
+                pass
+
+        elif value.startswith("hsl"):
+            try:
+                values = value[4:-1].split(",")
                 if len(values) == 3:
                     return hsl(
                         int(values[0]),
-                        int(values[1].strip().rstrip('%')) / 100.0,
-                        int(values[2].strip().rstrip('%')) / 100.0,
+                        int(values[1].strip().rstrip("%")) / 100.0,
+                        int(values[2].strip().rstrip("%")) / 100.0,
                     )
             except ValueError:
                 pass
@@ -226,7 +236,7 @@ def color(value):
             except KeyError:
                 pass
 
-    raise ValueError('Unknown color %s' % value)
+    raise ValueError("Unknown color %s" % value)
 
 
 NAMED_COLOR = {
@@ -382,5 +392,12 @@ NAMED_COLOR = {
 
 
 __all__ = [
-    'Color', 'rgba', 'rgb', 'hsla', 'hsl', 'color', 'NAMED_COLOR', 'TRANSPARENT'
+    "Color",
+    "rgba",
+    "rgb",
+    "hsla",
+    "hsl",
+    "color",
+    "NAMED_COLOR",
+    "TRANSPARENT",
 ] + [name.upper() for name in NAMED_COLOR.keys()]
