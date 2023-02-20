@@ -181,7 +181,6 @@ class BaseStyle:
             return getattr(self, "_%s" % name, initial)
 
         def setter(self, value):
-            # Treat a Python None as a reset to initial value
             if value is None:
                 raise ValueError(
                     "Python `None` cannot be used as a style value; "
