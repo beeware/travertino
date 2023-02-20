@@ -52,8 +52,12 @@ class PropertyChoiceTests(TestCase):
         obj.prop = REBECCAPURPLE
         self.assert_property(obj, REBECCAPURPLE)
 
-        # A Python None is a reset to initial value
-        obj.prop = None
+        # A Python None is invalid
+        with self.assertRaises(ValueError):
+            obj.prop = None
+
+        # The property can be reset
+        del obj.prop
         self.assert_property(obj, NONE)
 
         # Check the error message
@@ -100,8 +104,12 @@ class PropertyChoiceTests(TestCase):
         obj.prop = NONE
         self.assert_property(obj, NONE)
 
-        # A Python None is a reset to initial value
-        obj.prop = None
+        # A Python None is invalid
+        with self.assertRaises(ValueError):
+            obj.prop = None
+
+        # The property can be reset
+        del obj.prop
         self.assert_property(obj, "start")
 
         # Check the error message
@@ -147,8 +155,12 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = NONE
 
-        # A Python None is a reset to initial value
-        obj.prop = None
+        # A Python None is invalid
+        with self.assertRaises(ValueError):
+            obj.prop = None
+
+        # The property can be reset
+        del obj.prop
         self.assert_property(obj, 0)
 
         # Check the error message
@@ -193,8 +205,12 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = NONE
 
-        # A Python None is a reset to initial value
-        obj.prop = None
+        # A Python None is invalid
+        with self.assertRaises(ValueError):
+            obj.prop = None
+
+        # The property can be reset
+        del obj.prop
         self.assert_property(obj, 0)
 
         # Check the error message
@@ -241,8 +257,12 @@ class PropertyChoiceTests(TestCase):
         with self.assertRaises(ValueError):
             obj.prop = NONE
 
-        # A Python None is a reset to initial value
-        obj.prop = None
+        # A Python None is invalid
+        with self.assertRaises(ValueError):
+            obj.prop = None
+
+        # The property can be reset
+        del obj.prop
         self.assert_property(obj, NAMED_COLOR["goldenrod"])
 
         # Check the error message
@@ -285,8 +305,12 @@ class PropertyChoiceTests(TestCase):
         obj.prop = "b"
         self.assert_property(obj, "b")
 
-        # A Python None is a reset to initial value
-        obj.prop = None
+        # A Python None is invalid
+        with self.assertRaises(ValueError):
+            obj.prop = None
+
+        # The property can be reset
+        del obj.prop
         self.assert_property(obj, "a")
 
         # Check the error message
@@ -333,9 +357,13 @@ class PropertyChoiceTests(TestCase):
         obj.prop = "b"
         self.assert_property(obj, "b")
 
-        # A Python None is a reset to initial value;
+        # A Python None is invalid
+        with self.assertRaises(ValueError):
+            obj.prop = None
+
+        # The property can be reset
         # There's no initial value, so the property is None
-        obj.prop = None
+        del obj.prop
         self.assertIsNone(obj.prop)
 
         # Check the error message

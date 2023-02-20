@@ -181,26 +181,23 @@ class BaseStyle:
             return getattr(self, "_%s" % name, initial)
 
         def setter(self, value):
+            # Treat a Python None as a reset to initial value
+            if value is None:
+                raise ValueError(
+                    "Python `None` cannot be used as a style value; "
+                    f"to reset a property, use del `style.{name}`"
+                )
             try:
-                # Treat a Python None as a reset to initial value
-                if value is None:
-                    value = initial
-                else:
-                    value = choices.validate(value)
+                value = choices.validate(value)
             except ValueError:
                 raise ValueError(
                     f"Invalid value {value!r} for property {name}; "
                     f"Valid values are: {choices}"
                 )
 
-            if value is None:
-                # Treat a Python None as a reset to initial value.
-                # This is implemented by deleting the underlying attribute
-                delattr(self, name)
-            else:
-                if value != getattr(self, "_%s" % name, initial):
-                    setattr(self, "_%s" % name, value)
-                    self.apply(name, value)
+            if value != getattr(self, "_%s" % name, initial):
+                setattr(self, "_%s" % name, value)
+                self.apply(name, value)
 
         def deleter(self):
             try:
