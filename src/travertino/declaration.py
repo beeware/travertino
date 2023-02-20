@@ -55,13 +55,11 @@ class Choices:
                 return color(value)
             except ValueError:
                 pass
-        if value == "none":
-            value = None
         for const in self.constants:
             if value == const:
                 return const
 
-        raise ValueError(f"'{value}' is not a valid initial value")
+        raise ValueError(f"{value!r} is not a valid value")
 
     def __str__(self):
         return ", ".join(self._options)
@@ -172,21 +170,28 @@ class BaseStyle:
     def validated_property(cls, name, choices, initial=None):
         "Define a simple validated property attribute."
         try:
-            initial = choices.validate(initial)
+            # If an initial value has been provided, it must be consistent with
+            # the choices specified.
+            if initial is not None:
+                initial = choices.validate(initial)
         except ValueError:
-            raise ValueError(f"Invalid initial value '{initial}' for property '{name}'")
+            raise ValueError(f"Invalid initial value {initial!r} for property {name}")
 
         def getter(self):
             return getattr(self, "_%s" % name, initial)
 
         def setter(self, value):
+            if value is None:
+                raise ValueError(
+                    "Python `None` cannot be used as a style value; "
+                    f"to reset a property, use del `style.{name}`"
+                )
             try:
                 value = choices.validate(value)
             except ValueError:
                 raise ValueError(
-                    "Invalid value '{}' for property '{}'; Valid values are: {}".format(
-                        value, name, choices
-                    )
+                    f"Invalid value {value!r} for property {name}; "
+                    f"Valid values are: {choices}"
                 )
 
             if value != getattr(self, "_%s" % name, initial):
