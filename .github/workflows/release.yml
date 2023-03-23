@@ -12,6 +12,7 @@ jobs:
   release:
     name: Create Release
     needs: ci
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -22,16 +23,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: "3.X"
+          python-version: "3.x"
 
       - name: Get packages
         uses: actions/download-artifact@v3.0.2
         with:
-          name: packages
+          name: ${{ needs.ci.outputs.artifact-name }}
           path: dist
 
       - name: Install packages
-        run: pip install dist/travertino-*.whl
+        run: pip install dist/*.whl
 
       - name: Check version number
         # Check that the setuptools_scm-generated version number is still the same when
@@ -40,26 +41,13 @@ jobs:
           set -x
           test $(python -c "from travertino import __version__; print(__version__)") = $VERSION
 
-      - name: Create Release
+      - name: Create release
         uses: ncipollo/release-action@v1.12.0
         with:
           name: ${{ env.VERSION }}
           draft: true
           artifacts: dist/*
           artifactErrorsFailBuild: true
-
-  test-publish:
-    name: Publish test package
-    needs: [release]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Get packages
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: packages
-          path: dist
 
       - name: Publish release to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

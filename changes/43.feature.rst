@@ -1,1 +1,0 @@
-Constants for absolute and relative font sizing were added.

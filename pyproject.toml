@@ -13,6 +13,7 @@ combine_as_imports = true
 [tool.towncrier]
 directory = "changes"
 package = "travertino"
+package_dir = "src"
 filename = "CHANGELOG.rst"
 title_format = "{version} ({project_date})"
 issue_format = "`#{issue} <https://github.com/beeware/travertino/issues/{issue}>`_"

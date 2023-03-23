@@ -1,1 +1,0 @@
-Handling of ``none`` as a property value has been corrected.

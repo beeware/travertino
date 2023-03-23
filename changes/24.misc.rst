@@ -1,1 +1,0 @@
-Flake8 should ignore the venv directory when running.

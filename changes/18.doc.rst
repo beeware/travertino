@@ -1,1 +1,0 @@
-Details on towncrier and pre-commit ussage were added to the README.

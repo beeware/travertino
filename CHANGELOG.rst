@@ -3,6 +3,34 @@ Changelog
 
 .. towncrier release notes start
 
+0.2.0 (2023-03-24)
+==================
+
+Features
+--------
+
+* Node now supports the ``clear`` method in order to clear all children. (`#23 <https://github.com/beeware/travertino/issues/23>`_)
+* Constants for absolute and relative font sizing were added. (`#43 <https://github.com/beeware/travertino/issues/43>`_)
+
+
+Bugfixes
+--------
+
+* Handling of ``none`` as a property value has been corrected. (`#3 <https://github.com/beeware/travertino/issues/3>`_)
+
+
+Improved Documentation
+----------------------
+
+* Details on towncrier and pre-commit ussage were added to the README. (`#18 <https://github.com/beeware/travertino/issues/18>`_)
+
+
+Misc
+----
+
+* `#22 <https://github.com/beeware/travertino/issues/22>`_, `#24 <https://github.com/beeware/travertino/issues/24>`_, `#25 <https://github.com/beeware/travertino/issues/25>`_, `#26 <https://github.com/beeware/travertino/issues/26>`_, `#30 <https://github.com/beeware/travertino/issues/30>`_, `#34 <https://github.com/beeware/travertino/issues/34>`_, `#35 <https://github.com/beeware/travertino/issues/35>`_, `#36 <https://github.com/beeware/travertino/issues/36>`_, `#37 <https://github.com/beeware/travertino/issues/37>`_, `#38 <https://github.com/beeware/travertino/issues/38>`_, `#39 <https://github.com/beeware/travertino/issues/39>`_, `#40 <https://github.com/beeware/travertino/issues/40>`_, `#41 <https://github.com/beeware/travertino/issues/41>`_, `#42 <https://github.com/beeware/travertino/issues/42>`_
+
+
 0.1.3 (2020-05-25)
 ------------------
 
