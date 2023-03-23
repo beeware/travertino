@@ -81,6 +81,31 @@ FONT_WEIGHTS = {BOLD}
 
 SYSTEM_DEFAULT_FONT_SIZE = -1
 
+XX_SMALL = "xx-small"
+X_SMALL = "x-small"
+SMALL = "small"
+MEDIUM = "medium"
+LARGE = "large"
+X_LARGE = "x-large"
+XX_LARGE = "xx-large"
+XXX_LARGE = "xxx-large"
+
+ABSOLUTE_FONT_SIZES = {
+    XX_SMALL,
+    X_SMALL,
+    SMALL,
+    MEDIUM,
+    LARGE,
+    X_LARGE,
+    XX_LARGE,
+    XXX_LARGE,
+}
+
+LARGER = "larger"
+SMALLER = "smaller"
+
+RELATIVE_FONT_SIZES = {LARGER, SMALLER}
+
 ######################################################################
 # Colors
 ######################################################################
