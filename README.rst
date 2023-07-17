@@ -61,7 +61,7 @@ Community
 
 Travertino is part of the `BeeWare suite`_. You can talk to the community through:
 
-* `@pybeeware on Twitter`_
+* `@beeware@fosstodon.org on Mastodon <https://fosstodon.org/@beeware>`__
 
 * `Discord <https://beeware.org/bee/chat/>`__
 
