@@ -13,15 +13,6 @@ class Style(BaseStyle):
     class Box(BaseBox):
         pass
 
-    def layout(self, root, viewport):
-        # A simple layout scheme that allocates twice the viewport size,
-        # and has a minimum content size of half the viewport size
-        root.layout.content_width = viewport.width * 2
-        root.layout.content_height = viewport.height * 2
-
-        root.layout.min_content_width = viewport.width // 2
-        root.layout.min_content_height = viewport.height // 2
-
 
 class ViewportTests(TestCase):
     def test_default(self):
