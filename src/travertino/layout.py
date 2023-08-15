@@ -59,6 +59,10 @@ class BaseBox:
         # layout *at all*.
         self.visible = True
 
+        # Minimum width and height of the content box.
+        self.min_content_width = 0
+        self.min_content_height = 0
+
         # Width and height of the content box.
         self.content_width = 0
         self.content_height = 0
@@ -109,8 +113,16 @@ class BaseBox:
         return self._content_left + self.content_width + self.content_right
 
     @property
+    def min_width(self):
+        return self._content_left + self.min_content_width + self.content_right
+
+    @property
     def height(self):
         return self._content_top + self.content_height + self.content_bottom
+
+    @property
+    def min_height(self):
+        return self._content_top + self.min_content_height + self.content_bottom
 
     ######################################################################
     # Content box properties

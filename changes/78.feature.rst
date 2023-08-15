@@ -1,0 +1,1 @@
+Layout nodes can now track the minimum permitted layout size in addition to the current actual layout size.
