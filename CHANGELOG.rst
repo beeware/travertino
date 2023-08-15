@@ -3,6 +3,27 @@ Changelog
 
 .. towncrier release notes start
 
+0.3.0 (2023-08-16)
+==================
+
+Features
+--------
+
+* Layout nodes can now track the minimum permitted layout size in addition to the current actual layout size. (`#78 <https://github.com/beeware/travertino/issues/78>`_)
+
+
+Backward Incompatible Changes
+-----------------------------
+
+* Support for Python 3.7 was removed. (`#80 <https://github.com/beeware/travertino/issues/80>`_)
+
+
+Misc
+----
+
+* `#44 <https://github.com/beeware/travertino/issues/44>`_, `#45 <https://github.com/beeware/travertino/issues/45>`_, `#46 <https://github.com/beeware/travertino/issues/46>`_, `#47 <https://github.com/beeware/travertino/issues/47>`_, `#48 <https://github.com/beeware/travertino/issues/48>`_, `#49 <https://github.com/beeware/travertino/issues/49>`_, `#50 <https://github.com/beeware/travertino/issues/50>`_, `#51 <https://github.com/beeware/travertino/issues/51>`_, `#52 <https://github.com/beeware/travertino/issues/52>`_, `#53 <https://github.com/beeware/travertino/issues/53>`_, `#54 <https://github.com/beeware/travertino/issues/54>`_, `#55 <https://github.com/beeware/travertino/issues/55>`_, `#56 <https://github.com/beeware/travertino/issues/56>`_, `#57 <https://github.com/beeware/travertino/issues/57>`_, `#58 <https://github.com/beeware/travertino/issues/58>`_, `#59 <https://github.com/beeware/travertino/issues/59>`_, `#60 <https://github.com/beeware/travertino/issues/60>`_, `#61 <https://github.com/beeware/travertino/issues/61>`_, `#62 <https://github.com/beeware/travertino/issues/62>`_, `#63 <https://github.com/beeware/travertino/issues/63>`_, `#65 <https://github.com/beeware/travertino/issues/65>`_, `#66 <https://github.com/beeware/travertino/issues/66>`_, `#67 <https://github.com/beeware/travertino/issues/67>`_, `#72 <https://github.com/beeware/travertino/issues/72>`_, `#73 <https://github.com/beeware/travertino/issues/73>`_, `#74 <https://github.com/beeware/travertino/issues/74>`_, `#75 <https://github.com/beeware/travertino/issues/75>`_, `#76 <https://github.com/beeware/travertino/issues/76>`_, `#77 <https://github.com/beeware/travertino/issues/77>`_, `#79 <https://github.com/beeware/travertino/issues/79>`_, `#81 <https://github.com/beeware/travertino/issues/81>`_, `#82 <https://github.com/beeware/travertino/issues/82>`_, `#83 <https://github.com/beeware/travertino/issues/83>`_, `#84 <https://github.com/beeware/travertino/issues/84>`_, `#85 <https://github.com/beeware/travertino/issues/85>`_, `#86 <https://github.com/beeware/travertino/issues/86>`_, `#87 <https://github.com/beeware/travertino/issues/87>`_
+
+
 0.2.0 (2023-03-24)
 ==================
 
