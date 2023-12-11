@@ -33,7 +33,7 @@ Style.validated_property("thing_left", choices=VALUE_CHOICES, initial=0)
 Style.directional_property("thing%s")
 
 
-class TestNode:
+class ExampleNode:
     def __init__(self, style=None):
         if style is None:
             self.style = Style()
@@ -61,7 +61,7 @@ class DeclarationTests(TestCase):
         self.assertEqual(dup.implicit, VALUE3)
 
     def test_reapply(self):
-        node = TestNode(style=Style(explicit_const=VALUE2, implicit=VALUE3))
+        node = ExampleNode(style=Style(explicit_const=VALUE2, implicit=VALUE3))
 
         node.style.reapply()
         node.style.apply.assert_has_calls(
@@ -79,7 +79,7 @@ class DeclarationTests(TestCase):
         )
 
     def test_property_with_explicit_const(self):
-        node = TestNode()
+        node = ExampleNode()
 
         # Default value is VALUE1
         self.assertIs(node.style.explicit_const, VALUE1)
@@ -125,7 +125,7 @@ class DeclarationTests(TestCase):
         node.style.apply.assert_not_called()
 
     def test_property_with_explicit_value(self):
-        node = TestNode()
+        node = ExampleNode()
 
         # Default value is 0
         self.assertEqual(node.style.explicit_value, 0)
@@ -161,7 +161,7 @@ class DeclarationTests(TestCase):
         node.style.apply.assert_called_once_with("explicit_value", 0)
 
     def test_property_with_explicit_none(self):
-        node = TestNode()
+        node = ExampleNode()
 
         # Default value is None
         self.assertIsNone(node.style.explicit_none)
@@ -197,7 +197,7 @@ class DeclarationTests(TestCase):
         node.style.apply.assert_called_once_with("explicit_none", None)
 
     def test_property_with_implicit_default(self):
-        node = TestNode()
+        node = ExampleNode()
 
         # Default value is None
         self.assertIsNone(node.style.implicit)
@@ -233,7 +233,7 @@ class DeclarationTests(TestCase):
         node.style.apply.assert_called_once_with("implicit", None)
 
     def test_directional_property(self):
-        node = TestNode()
+        node = ExampleNode()
 
         # Default value is 0
         self.assertEqual(node.style.thing, (0, 0, 0, 0))
@@ -381,7 +381,7 @@ class DeclarationTests(TestCase):
         )
 
     def test_set_multiple_properties(self):
-        node = TestNode()
+        node = ExampleNode()
 
         # Set a pair of properties
         node.style.update(explicit_value=20, explicit_none=10)
@@ -421,7 +421,7 @@ class DeclarationTests(TestCase):
         node.style.apply.assert_not_called()
 
     def test_str(self):
-        node = TestNode()
+        node = ExampleNode()
 
         node.style.update(
             explicit_const=VALUE2,
@@ -441,7 +441,7 @@ class DeclarationTests(TestCase):
 
     def test_dict(self):
         "Style declarations expose a dict-like interface"
-        node = TestNode()
+        node = ExampleNode()
 
         node.style.update(
             explicit_const=VALUE2,
