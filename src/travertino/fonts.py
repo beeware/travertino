@@ -44,9 +44,11 @@ class Font:
             "" if self.style is NORMAL else (self.style + " "),
             "" if self.variant is NORMAL else (self.variant + " "),
             "" if self.weight is NORMAL else (self.weight + " "),
-            "system default size"
-            if self.size == SYSTEM_DEFAULT_FONT_SIZE
-            else f"{self.size}pt",
+            (
+                "system default size"
+                if self.size == SYSTEM_DEFAULT_FONT_SIZE
+                else f"{self.size}pt"
+            ),
             self.family,
         )
 
