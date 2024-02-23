@@ -14,7 +14,6 @@ class Choices:
         color=False,
     ):
         self.constants = set(constants)
-        self.default = default
 
         self.string = string
         self.integer = integer
@@ -32,9 +31,6 @@ class Choices:
             self._options.append("<color>")
 
     def validate(self, value):
-        if self.default:
-            if value is None:
-                return None
         if self.string:
             try:
                 return value.strip()
