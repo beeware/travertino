@@ -396,3 +396,7 @@ class PropertyChoiceTests(TestCase):
         # Both equality and instance checking should work.
         self.assertEqual(obj.prop, TOP)
         self.assertIs(obj.prop, TOP)
+
+    def test_deprecated_default(self):
+        with self.assertWarns(DeprecationWarning):
+            Choices(default=True)

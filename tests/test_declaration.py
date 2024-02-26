@@ -7,7 +7,7 @@ VALUE1 = "value1"
 VALUE2 = "value2"
 VALUE3 = "value3"
 VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, None, integer=True)
-DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True, default=True)
+DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True)
 
 
 class Style(BaseStyle):
