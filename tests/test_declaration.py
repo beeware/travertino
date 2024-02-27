@@ -3,7 +3,7 @@ from __future__ import annotations
 from unittest import TestCase
 from unittest.mock import call
 
-from tests.test_choices_new_api import prep_style_class
+from tests.test_choices import prep_style_class
 from travertino.declaration import (
     BaseStyle,
     Choices,
