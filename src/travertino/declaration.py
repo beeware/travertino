@@ -160,7 +160,10 @@ class directional_property:
             compatibility method can use it.
         """
         if create_directions and choices is None:
-            raise ValueError(f"Choices must be provided for {name_format.format('')}.")
+            raise TypeError(
+                f"{self.__class__.__name__}.__init__() missing 1 required positional "
+                "argument: 'choices'"
+            )
         self.name_format = name_format
         self.choices = choices
         self.initial = initial
