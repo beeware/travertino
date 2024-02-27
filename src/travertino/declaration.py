@@ -1,4 +1,9 @@
+from warnings import filterwarnings, warn
+
 from .colors import color
+
+# Make sure deprecation warnings are shown by default
+filterwarnings("default", category=DeprecationWarning)
 
 
 class Choices:
@@ -7,14 +12,21 @@ class Choices:
     def __init__(
         self,
         *constants,
-        default=False,
+        default=None,  # DEPRECATED
         string=False,
         integer=False,
         number=False,
         color=False,
     ):
+        if default is not None:
+            warn(
+                "The `default` argument to Choices.__init__ is deprecated. "
+                "Providing no initial value to a property using it is sufficient.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         self.constants = set(constants)
-        self.default = default
 
         self.string = string
         self.integer = integer
@@ -32,9 +44,6 @@ class Choices:
             self._options.append("<color>")
 
     def validate(self, value):
-        if self.default:
-            if value is None:
-                return None
         if self.string:
             try:
                 return value.strip()
