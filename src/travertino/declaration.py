@@ -84,7 +84,7 @@ class validated_property:
         """Define a simple validated property attribute.
 
         :param choices: The available choices.
-        :param initial: What value to set initially. None means no initial value.
+        :param initial: The initial value for the property.
         """
         self.choices = choices
         self.initial = None
