@@ -348,3 +348,35 @@ class BaseStyle:
         prop = directional_property(name_format, create_directions=False)
         setattr(cls, name, prop)
         prop.__set_name__(cls, name)
+
+    # Kept here for reference, for eventual implementation?
+
+    # def list_property(name, choices, initial=None):
+    #     "Define a property attribute that accepts a list of independently validated values."
+    #     initial = choices.validate(initial)
+
+    #     def getter(self):
+    #         return getattr(self, '_%s' % name, initial)
+
+    #     def setter(self, values):
+    #         try:
+    #             value = [choices.validate(v) for v in values.split(',')]
+    #         except ValueError:
+    #             raise ValueError("Invalid value in for list property '%s'; Valid values are: %s" % (
+    #                 name, choices
+    #             ))
+
+    #         if value != getattr(self, '_%s' % name, initial):
+    #             setattr(self, '_%s' % name, value)
+    #             self.apply(name, value)
+
+    #     def deleter(self):
+    #         try:
+    #             delattr(self, '_%s' % name)
+    #             self.apply(name, value)
+    #         except AttributeError:
+    #             # Attribute doesn't exist
+    #             pass
+
+    #     _PROPERTIES.add(name)
+    #     return property(getter, setter, deleter)
