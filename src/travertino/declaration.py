@@ -294,20 +294,18 @@ class BaseStyle:
             raise KeyError(name)
 
     def items(self):
-        result = []
-        for name in self._PROPERTIES[self.__class__]:
-            try:
-                result.append((name, getattr(self, f"_{name}")))
-            except AttributeError:
-                pass
-        return result
+        return [
+            (name, value)
+            for name in self._PROPERTIES[self.__class__]
+            if (value := getattr(self, f"_{name}", None))
+        ]
 
     def keys(self):
-        result = set()
-        for name in self._PROPERTIES[self.__class__]:
-            if hasattr(self, f"_{name}"):
-                result.add(name)
-        return result
+        return {
+            name
+            for name in self._PROPERTIES[self.__class__]
+            if hasattr(self, f"_{name}")
+        }
 
     ######################################################################
     # Get the rendered form of the style declaration
