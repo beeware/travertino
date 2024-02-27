@@ -7,9 +7,6 @@ from .constants import BOTTOM, LEFT, RIGHT, TOP
 # Make sure deprecation warnings are shown by default
 filterwarnings("default", category=DeprecationWarning)
 
-# Make sure deprecation warnings are shown by default
-filterwarnings("default", category=DeprecationWarning)
-
 
 class Choices:
     "A class to define allowable data types for a property"
@@ -156,17 +153,17 @@ class directional_property:
         4: [0, 1, 2, 3],
     }
 
-    def __init__(self, name_format, choices=None, initial=None, create_directions=True):
+    def __init__(
+        self, name_format, choices=None, initial=None, _create_directions=True
+    ):
         """Define a property attribute that proxies for top/right/bottom/left alternatives.
 
         :param name_format: The format from which to generate subproperties. "{}" will
             be replaced with "_top", etc.
         :param choices: The available choices.
         :param initial: What value to set initially. None means no initial value.
-        :create_directions: Do not set this directly. It's here so the backwards-
-            compatibility method can use it.
         """
-        if create_directions and choices is None:
+        if _create_directions and choices is None:
             raise TypeError(
                 f"{self.__class__.__name__}.__init__() missing 1 required positional "
                 "argument: 'choices'"
@@ -174,7 +171,7 @@ class directional_property:
         self.name_format = name_format
         self.choices = choices
         self.initial = initial
-        self.create_directions = create_directions
+        self._create_directions = _create_directions
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -183,7 +180,7 @@ class directional_property:
         # Dynamically create the actual properties. They still need to be defined as
         # class attributes in order to be in the dataclass init, but they don't have to
         # be set to anything.
-        if self.create_directions:
+        if self._create_directions:
             for direction in self.DIRECTIONS:
                 prop_name = self.format(direction)
                 prop = validated_property(self.choices, self.initial)
@@ -357,7 +354,7 @@ class BaseStyle:
         )
         name_format = name % "{}"
         name = name_format.format("")
-        prop = directional_property(name_format, create_directions=False)
+        prop = directional_property(name_format, _create_directions=False)
         setattr(cls, name, prop)
         prop.__set_name__(cls, name)
 

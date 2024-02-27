@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from unittest import TestCase
 from unittest.mock import Mock
@@ -8,9 +9,10 @@ from travertino.colors import NAMED_COLOR, rgb
 from travertino.constants import GOLDENROD, NONE, REBECCAPURPLE, TOP
 from travertino.declaration import BaseStyle, Choices, validated_property
 
-_DATACLASS_ARGS = (
-    {"kw_only": True} if "kw_only" in dataclass.__kwdefaults__ else {"init": False}
-)
+if sys.version_info < (3, 10):
+    _DATACLASS_KWARGS = {"init": False}
+else:
+    _DATACLASS_KWARGS = {"kw_only": True}
 
 
 def prep_style_class(cls):
@@ -22,7 +24,7 @@ def prep_style_class(cls):
         orig_init(self, *args, **kwargs)
 
     cls.__init__ = __init__
-    return dataclass(**_DATACLASS_ARGS)(cls)
+    return dataclass(**_DATACLASS_KWARGS)(cls)
 
 
 class PropertyChoiceTests(TestCase):
