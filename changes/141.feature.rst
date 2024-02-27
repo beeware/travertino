@@ -1,0 +1,1 @@
+Validated properties of styles can now be defined as dataclass class attributes.
