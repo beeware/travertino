@@ -159,9 +159,9 @@ class directional_property:
         :create_directions: Do not set this directly. It's here so the backwards-
             compatibility method can use it.
         """
-        self.name_format = name_format
         if create_directions and choices is None:
-            raise ValueError(f"Choices must be provided for {self.format('')}.")
+            raise ValueError(f"Choices must be provided for {name_format.format('')}.")
+        self.name_format = name_format
         self.choices = choices
         self.initial = initial
         self.create_directions = create_directions
