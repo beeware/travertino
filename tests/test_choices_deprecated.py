@@ -1,30 +1,9 @@
-from __future__ import annotations
-
-import sys
-from dataclasses import dataclass
 from unittest import TestCase
 from unittest.mock import Mock
 
 from travertino.colors import NAMED_COLOR, rgb
 from travertino.constants import GOLDENROD, NONE, REBECCAPURPLE, TOP
-from travertino.declaration import BaseStyle, Choices, validated_property
-
-if sys.version_info < (3, 10):
-    _DATACLASS_KWARGS = {"init": False}
-else:
-    _DATACLASS_KWARGS = {"kw_only": True}
-
-
-def prep_style_class(cls):
-    """Decorator to apply dataclass and mock a style class's apply method."""
-    orig_init = cls.__init__
-
-    def __init__(self, *args, **kwargs):
-        self.apply = Mock()
-        orig_init(self, *args, **kwargs)
-
-    cls.__init__ = __init__
-    return dataclass(**_DATACLASS_KWARGS)(cls)
+from travertino.declaration import BaseStyle, Choices
 
 
 class PropertyChoiceTests(TestCase):
@@ -35,11 +14,13 @@ class PropertyChoiceTests(TestCase):
             obj.apply.reset_mock()
 
     def test_none(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: str = validated_property(
-                choices=Choices(NONE, REBECCAPURPLE), initial=NONE
-            )
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property(
+            "prop", choices=Choices(NONE, REBECCAPURPLE), initial=NONE
+        )
 
         obj = MyObject()
         self.assert_property(obj, NONE, check_mock=False)
@@ -90,11 +71,13 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_string(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: str = validated_property(
-                choices=Choices(string=True), initial="start"
-            )
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property(
+            "prop", choices=Choices(string=True), initial="start"
+        )
 
         obj = MyObject()
         self.assertEqual(obj.prop, "start")
@@ -139,9 +122,11 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_integer(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: int = validated_property(choices=Choices(integer=True), initial=0)
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property("prop", choices=Choices(integer=True), initial=0)
 
         obj = MyObject()
         self.assertEqual(obj.prop, 0)
@@ -189,9 +174,11 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_number(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: float = validated_property(choices=Choices(number=True), initial=0)
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property("prop", choices=Choices(number=True), initial=0)
 
         obj = MyObject()
         self.assertEqual(obj.prop, 0)
@@ -237,11 +224,13 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_allow_color(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: str = validated_property(
-                choices=Choices(color=True), initial="goldenrod"
-            )
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property(
+            "prop", choices=Choices(color=True), initial="goldenrod"
+        )
 
         obj = MyObject()
         self.assertEqual(obj.prop, NAMED_COLOR[GOLDENROD])
@@ -287,9 +276,13 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_values(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: str = validated_property(choices=Choices("a", "b", NONE), initial="a")
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property(
+            "prop", choices=Choices("a", "b", NONE), initial="a"
+        )
 
         obj = MyObject()
         self.assertEqual(obj.prop, "a")
@@ -331,12 +324,15 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_multiple_choices(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: str | float = validated_property(
-                choices=Choices("a", "b", NONE, number=True, color=True),
-                initial=None,
-            )
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property(
+            "prop",
+            choices=Choices("a", "b", NONE, number=True, color=True),
+            initial=None,
+        )
 
         obj = MyObject()
 
@@ -382,9 +378,11 @@ class PropertyChoiceTests(TestCase):
             )
 
     def test_string_symbol(self):
-        @prep_style_class
         class MyObject(BaseStyle):
-            prop: str = validated_property(choices=Choices(TOP, NONE))
+            def __init__(self):
+                self.apply = Mock()
+
+        MyObject.validated_property("prop", choices=Choices(TOP, NONE))
 
         obj = MyObject()
 
@@ -398,3 +396,7 @@ class PropertyChoiceTests(TestCase):
         # Both equality and instance checking should work.
         self.assertEqual(obj.prop, TOP)
         self.assertIs(obj.prop, TOP)
+
+    def test_deprecated_default(self):
+        with self.assertWarns(DeprecationWarning):
+            Choices(default=True)

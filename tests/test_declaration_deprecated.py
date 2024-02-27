@@ -1,44 +1,36 @@
-from __future__ import annotations
-
 from unittest import TestCase
-from unittest.mock import call
+from unittest.mock import Mock, call
 
-from tests.test_choices_new_api import prep_style_class
-from travertino.declaration import (
-    BaseStyle,
-    Choices,
-    directional_property,
-    validated_property,
-)
+from travertino.declaration import BaseStyle, Choices
 
 VALUE1 = "value1"
 VALUE2 = "value2"
 VALUE3 = "value3"
 VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, None, integer=True)
-DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True, default=True)
+DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True)
 
 
-@prep_style_class
 class Style(BaseStyle):
-    # Some properties with explicit initial values
-    explicit_const: str | int = validated_property(
-        choices=VALUE_CHOICES, initial=VALUE1
-    )
-    explicit_value: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
-    explicit_none: str | int | None = validated_property(
-        choices=VALUE_CHOICES, initial=None
-    )
+    def __init__(self, **kwargs):
+        self.apply = Mock()
+        super().__init__(**kwargs)
 
-    # A property with an implicit default value.
-    # This usually means the default is platform specific.
-    implicit: str | int | None = validated_property(choices=DEFAULT_VALUE_CHOICES)
 
-    # A set of directional properties
-    thing: str | int = directional_property("thing{}", choices=VALUE_CHOICES, initial=0)
-    thing_top: str | int
-    thing_right: str | int
-    thing_bottom: str | int
-    thing_left: str | int
+# Some properties with explicit initial values
+Style.validated_property("explicit_const", choices=VALUE_CHOICES, initial=VALUE1)
+Style.validated_property("explicit_value", choices=VALUE_CHOICES, initial=0)
+Style.validated_property("explicit_none", choices=VALUE_CHOICES, initial=None)
+
+# A property with an implicit default value.
+# This usually means the default is platform specific.
+Style.validated_property("implicit", choices=DEFAULT_VALUE_CHOICES)
+
+# A set of directional properties
+Style.validated_property("thing_top", choices=VALUE_CHOICES, initial=0)
+Style.validated_property("thing_right", choices=VALUE_CHOICES, initial=0)
+Style.validated_property("thing_bottom", choices=VALUE_CHOICES, initial=0)
+Style.validated_property("thing_left", choices=VALUE_CHOICES, initial=0)
+Style.directional_property("thing%s")
 
 
 class ExampleNode:
@@ -54,7 +46,11 @@ class DeclarationTests(TestCase):
         with self.assertRaises(ValueError):
             # Define a style that has an invalid initial value on a validated property
             class BadStyle(BaseStyle):
-                value = validated_property(choices=VALUE_CHOICES, initial="something")
+                pass
+
+            BadStyle.validated_property(
+                "value", choices=VALUE_CHOICES, initial="something"
+            )
 
     def test_create_and_copy(self):
         style = Style(explicit_const=VALUE2, implicit=VALUE3)
