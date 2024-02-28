@@ -247,7 +247,7 @@ def test_directional_property():
     node = ExampleNode()
 
     # Default value is 0
-    assert node.style.thing, (0, 0, 0 == 0)
+    assert node.style.thing == (0, 0, 0, 0)
     assert node.style.thing_top == 0
     assert node.style.thing_right == 0
     assert node.style.thing_bottom == 0
@@ -257,7 +257,7 @@ def test_directional_property():
     # Set a value in one axis
     node.style.thing_top = 10
 
-    assert node.style.thing, (10, 0, 0 == 0)
+    assert node.style.thing == (10, 0, 0, 0)
     assert node.style.thing_top == 10
     assert node.style.thing_right == 0
     assert node.style.thing_bottom == 0
@@ -270,7 +270,7 @@ def test_directional_property():
     # Set a value directly with a single item
     node.style.thing = (10,)
 
-    assert node.style.thing, (10, 10, 10 == 10)
+    assert node.style.thing == (10, 10, 10, 10)
     assert node.style.thing_top == 10
     assert node.style.thing_right == 10
     assert node.style.thing_bottom == 10
@@ -289,7 +289,7 @@ def test_directional_property():
     # Set a value directly with a single item
     node.style.thing = 30
 
-    assert node.style.thing, (30, 30, 30 == 30)
+    assert node.style.thing == (30, 30, 30, 30)
     assert node.style.thing_top == 30
     assert node.style.thing_right == 30
     assert node.style.thing_bottom == 30
@@ -309,7 +309,7 @@ def test_directional_property():
     # Set a value directly with a 2 values
     node.style.thing = (10, 20)
 
-    assert node.style.thing, (10, 20, 10 == 20)
+    assert node.style.thing == (10, 20, 10, 20)
     assert node.style.thing_top == 10
     assert node.style.thing_right == 20
     assert node.style.thing_bottom == 10
@@ -329,7 +329,7 @@ def test_directional_property():
     # Set a value directly with a 3 values
     node.style.thing = (10, 20, 30)
 
-    assert node.style.thing, (10, 20, 30 == 20)
+    assert node.style.thing == (10, 20, 30, 20)
     assert node.style.thing_top == 10
     assert node.style.thing_right == 20
     assert node.style.thing_bottom == 30
@@ -342,7 +342,7 @@ def test_directional_property():
     # Set a value directly with a 4 values
     node.style.thing = (10, 20, 30, 40)
 
-    assert node.style.thing, (10, 20, 30 == 40)
+    assert node.style.thing == (10, 20, 30, 40)
     assert node.style.thing_top == 10
     assert node.style.thing_right == 20
     assert node.style.thing_bottom == 30
@@ -362,7 +362,7 @@ def test_directional_property():
     # Clear a value on one axis
     del node.style.thing_top
 
-    assert node.style.thing, (0, 20, 30 == 40)
+    assert node.style.thing == (0, 20, 30, 40)
     assert node.style.thing_top == 0
     assert node.style.thing_right == 20
     assert node.style.thing_bottom == 30
@@ -378,7 +378,7 @@ def test_directional_property():
     # Clear a value directly
     del node.style.thing
 
-    assert node.style.thing, (0, 0, 0 == 0)
+    assert node.style.thing == (0, 0, 0, 0)
     assert node.style.thing_top == 0
     assert node.style.thing_right == 0
     assert node.style.thing_bottom == 0
