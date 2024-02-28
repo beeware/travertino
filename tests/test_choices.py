@@ -18,6 +18,11 @@ else:
 
 def prep_style_class(cls):
     """Decorator to apply dataclass and mock a style class's apply method."""
+    return dataclass(**_DATACLASS_KWARGS)(mock_apply(cls))
+
+
+def mock_apply(cls):
+    """Only mock apply, without applying dataclass. For testing deprecated API."""
     orig_init = cls.__init__
 
     def __init__(self, *args, **kwargs):
@@ -25,7 +30,7 @@ def prep_style_class(cls):
         orig_init(self, *args, **kwargs)
 
     cls.__init__ = __init__
-    return dataclass(**_DATACLASS_KWARGS)(cls)
+    return cls
 
 
 def test_none():
