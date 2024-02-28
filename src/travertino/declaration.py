@@ -161,7 +161,7 @@ class directional_property:
         :param name_format: The format from which to generate subproperties. "{}" will
             be replaced with "_top", etc.
         :param choices: The available choices.
-        :param initial: What value to set initially. None means no initial value.
+        :param initial: The initial value for the property.
         """
         if _create_directions and choices is None:
             raise TypeError(
