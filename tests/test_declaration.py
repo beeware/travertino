@@ -81,6 +81,16 @@ def test_invalid_style():
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_positional_argument(StyleClass):
+    # Could be the subclass or inherited __init__, depending on Python version / API
+    # used.
+    with pytest.raises(
+        TypeError, match=r"__init__\(\) takes 1 positional argument but 2 were given"
+    ):
+        StyleClass(5)
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
 def test_create_and_copy(StyleClass):
     style = StyleClass(explicit_const=VALUE2, implicit=VALUE3)
 
