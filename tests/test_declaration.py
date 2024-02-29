@@ -75,9 +75,8 @@ with catch_warnings():
 
 def test_invalid_style():
     with pytest.raises(ValueError):
-        # Define a style that has an invalid initial value on a validated property
-        class BadStyle(BaseStyle):
-            value = validated_property(choices=VALUE_CHOICES, initial="something")
+        # Define an invalid initial value on a validated property
+        validated_property(choices=VALUE_CHOICES, initial="something")
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
