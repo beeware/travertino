@@ -19,11 +19,11 @@ else:
 
 def prep_style_class(cls):
     """Decorator to apply dataclass and mock a style class's apply method."""
-    return dataclass(**_DATACLASS_KWARGS)(mock_apply(cls))
+    return mock_apply(dataclass(**_DATACLASS_KWARGS)(cls))
 
 
 def mock_apply(cls):
-    """Only mock apply, without applying dataclass. For testing deprecated API."""
+    """Only mock apply, without applying dataclass."""
     orig_init = cls.__init__
 
     def __init__(self, *args, **kwargs):
@@ -86,6 +86,13 @@ with catch_warnings():
     DeprecatedStyle.validated_property("string_symbol", choices=Choices(TOP, NONE))
 
 
+def assert_property(obj, name, value):
+    assert getattr(obj, name) == value
+
+    obj.apply.assert_called_once_with(name, value)
+    obj.apply.reset_mock()
+
+
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
 def test_none(StyleClass):
     style = StyleClass()
@@ -108,15 +115,15 @@ def test_none(StyleClass):
 
     # Set the property to a different explicit value
     style.none = REBECCAPURPLE
-    assert style.none == REBECCAPURPLE
+    assert_property(style, "none", REBECCAPURPLE)
 
     # A Travertino NONE is an explicit value
     style.none = NONE
-    assert style.none == NONE
+    assert_property(style, "none", NONE)
 
     # Set the property to a different explicit value
     style.none = REBECCAPURPLE
-    assert style.none == REBECCAPURPLE
+    assert_property(style, "none", REBECCAPURPLE)
 
     # A Python None is invalid
     with pytest.raises(ValueError):
@@ -124,7 +131,7 @@ def test_none(StyleClass):
 
     # The property can be reset
     del style.none
-    assert style.none == NONE
+    assert_property(style, "none", NONE)
 
     with pytest.raises(
         ValueError,
@@ -146,20 +153,20 @@ def test_allow_string(StyleClass):
         style.allow_string = 3.14159
 
     style.allow_string = REBECCAPURPLE
-    assert style.allow_string == "rebeccapurple"
+    assert_property(style, "allow_string", "rebeccapurple")
 
     style.allow_string = "#112233"
-    assert style.allow_string == "#112233"
+    assert_property(style, "allow_string", "#112233")
 
     style.allow_string = "a"
-    assert style.allow_string == "a"
+    assert_property(style, "allow_string", "a")
 
     style.allow_string = "b"
-    assert style.allow_string == "b"
+    assert_property(style, "allow_string", "b")
 
     # A Travertino NONE is an explicit string value
     style.allow_string = NONE
-    assert style.allow_string == NONE
+    assert_property(style, "allow_string", NONE)
 
     # A Python None is invalid
     with pytest.raises(ValueError):
@@ -167,7 +174,7 @@ def test_allow_string(StyleClass):
 
     # The property can be reset
     del style.allow_string
-    assert style.allow_string == "start"
+    assert_property(style, "allow_string", "start")
 
     with pytest.raises(
         ValueError,
@@ -182,12 +189,12 @@ def test_allow_integer(StyleClass):
     assert style.allow_integer == 0
 
     style.allow_integer = 10
-    assert style.allow_integer == 10
+    assert_property(style, "allow_integer", 10)
 
     # This is an odd case; Python happily rounds floats to integers.
     # It's more trouble than it's worth to correct this.
     style.allow_integer = 3.14159
-    assert style.allow_integer == 3
+    assert_property(style, "allow_integer", 3)
 
     with pytest.raises(ValueError):
         style.allow_integer = REBECCAPURPLE
@@ -211,7 +218,7 @@ def test_allow_integer(StyleClass):
 
     # The property can be reset
     del style.allow_integer
-    assert style.allow_integer == 0
+    assert_property(style, "allow_integer", 0)
 
     # Check the error message
     with pytest.raises(
@@ -227,10 +234,10 @@ def test_allow_number(StyleClass):
     assert style.allow_number == 0
 
     style.allow_number = 10
-    assert style.allow_number == 10.0
+    assert_property(style, "allow_number", 10.0)
 
     style.allow_number = 3.14159
-    assert style.allow_number == 3.14159
+    assert_property(style, "allow_number", 3.14159)
 
     with pytest.raises(ValueError):
         style.allow_number = REBECCAPURPLE
@@ -254,7 +261,7 @@ def test_allow_number(StyleClass):
 
     # The property can be reset
     del style.allow_number
-    assert style.allow_number == 0
+    assert_property(style, "allow_number", 0)
 
     with pytest.raises(
         ValueError,
@@ -275,10 +282,10 @@ def test_allow_color(StyleClass):
         style.allow_color = 3.14159
 
     style.allow_color = REBECCAPURPLE
-    assert style.allow_color == NAMED_COLOR[REBECCAPURPLE]
+    assert_property(style, "allow_color", NAMED_COLOR[REBECCAPURPLE])
 
     style.allow_color = "#112233"
-    assert style.allow_color == rgb(0x11, 0x22, 0x33)
+    assert_property(style, "allow_color", rgb(0x11, 0x22, 0x33))
 
     with pytest.raises(ValueError):
         style.allow_color = "a"
@@ -296,7 +303,7 @@ def test_allow_color(StyleClass):
 
     # The property can be reset
     del style.allow_color
-    assert style.allow_color == NAMED_COLOR["goldenrod"]
+    assert_property(style, "allow_color", NAMED_COLOR["goldenrod"])
 
     with pytest.raises(
         ValueError,
@@ -323,10 +330,10 @@ def test_values(StyleClass):
         style.values = "#112233"
 
     style.values = NONE
-    assert style.values == NONE
+    assert_property(style, "values", NONE)
 
     style.values = "b"
-    assert style.values == "b"
+    assert_property(style, "values", "b")
 
     # A Python None is invalid
     with pytest.raises(ValueError):
@@ -334,7 +341,7 @@ def test_values(StyleClass):
 
     # The property can be reset
     del style.values
-    assert style.values == "a"
+    assert_property(style, "values", "a")
 
     with pytest.raises(
         ValueError,
@@ -348,25 +355,25 @@ def test_multiple_choices(StyleClass):
     style = StyleClass()
 
     style.multiple_choices = 10
-    assert style.multiple_choices == 10.0
+    assert_property(style, "multiple_choices", 10.0)
 
     style.multiple_choices = 3.14159
-    assert style.multiple_choices == 3.14159
+    assert_property(style, "multiple_choices", 3.14159)
 
     style.multiple_choices = REBECCAPURPLE
-    assert style.multiple_choices == NAMED_COLOR[REBECCAPURPLE]
+    assert_property(style, "multiple_choices", NAMED_COLOR[REBECCAPURPLE])
 
     style.multiple_choices = "#112233"
-    assert style.multiple_choices == rgb(0x11, 0x22, 0x33)
+    assert_property(style, "multiple_choices", rgb(0x11, 0x22, 0x33))
 
     style.multiple_choices = "a"
-    assert style.multiple_choices == "a"
+    assert_property(style, "multiple_choices", "a")
 
     style.multiple_choices = NONE
-    assert style.multiple_choices == NONE
+    assert_property(style, "multiple_choices", NONE)
 
     style.multiple_choices = "b"
-    assert style.multiple_choices == "b"
+    assert_property(style, "multiple_choices", "b")
 
     # A Python None is invalid
     with pytest.raises(ValueError):
@@ -398,5 +405,5 @@ def test_string_symbol(StyleClass):
     style.string_symbol = val.lower()
 
     # Both equality and instance checking should work.
-    assert style.string_symbol == TOP
+    assert_property(style, "string_symbol", TOP)
     assert style.string_symbol is TOP

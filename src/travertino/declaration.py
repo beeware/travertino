@@ -131,7 +131,9 @@ class validated_property:
             )
 
         if value != getattr(obj, f"_{self.name}", None):
+            print("setting prop")
             setattr(obj, f"_{self.name}", value)
+            print("applying prop")
             obj.apply(self.name, value)
 
     def __delete__(self, obj):
@@ -154,7 +156,11 @@ class directional_property:
     }
 
     def __init__(
-        self, name_format, choices=None, initial=None, _create_directions=True
+        self,
+        name_format,
+        choices=None,
+        initial=None,
+        _create_directions=True,
     ):
         """Define a property attribute that proxies for top/right/bottom/left alternatives.
 
