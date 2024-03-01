@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Mapping
 from warnings import filterwarnings, warn
 
 from .colors import color
@@ -295,6 +296,27 @@ class BaseStyle:
             for name in self._PROPERTIES[self.__class__]
             if hasattr(self, f"_{name}")
         }
+
+    def __or__(self, other):
+        if isinstance(other, BaseStyle):
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+        elif not isinstance(other, Mapping):
+            return NotImplemented
+
+        result = self.copy()
+        result.update(**other)
+        return result
+
+    def __ior__(self, other):
+        if isinstance(other, BaseStyle):
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+        elif not isinstance(other, Mapping):
+            return NotImplemented
+
+        self.update(**other)
+        return self
 
     ######################################################################
     # Get the rendered form of the style declaration

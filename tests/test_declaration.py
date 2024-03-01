@@ -73,6 +73,18 @@ with catch_warnings():
     DeprecatedStyle.directional_property("thing%s")
 
 
+class StyleSubclass(Style):
+    pass
+
+
+class DeprecatedStyleSubclass(DeprecatedStyle):
+    pass
+
+
+class Sibling(BaseStyle):
+    pass
+
+
 def test_invalid_style():
     with pytest.raises(ValueError):
         # Define an invalid initial value on a validated property
@@ -548,6 +560,70 @@ def test_dict(StyleClass):
 
     with pytest.raises(KeyError):
         del style["no-such-property"]
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+@pytest.mark.parametrize("instantiate", [True, False])
+def test_union_operators(StyleClass, instantiate):
+    """Styles support | and |= with dicts and with their own class."""
+    left = StyleClass(explicit_value=VALUE1, implicit=VALUE2)
+
+    style_dict = {"thing_top": 5, "implicit": VALUE3}
+    right = StyleClass(**style_dict) if instantiate else style_dict
+
+    # Standard operator
+    result = left | right
+
+    # Original objects unchanged
+    assert left["explicit_value"] == VALUE1
+    assert left["implicit"] == VALUE2
+
+    assert right["thing_top"] == 5
+    assert right["implicit"] == VALUE3
+
+    # Unshared properties assigned
+    assert result["explicit_const"] == VALUE1
+    assert result["thing_top"] == 5
+
+    # Common property overridden by second operand
+    assert result["implicit"] == VALUE3
+
+    # In-place version
+    left |= right
+
+    # Common property updated on lefthand
+    assert left["explicit_value"] == VALUE1
+    assert left["implicit"] == VALUE3
+
+    # Righthand unchanged
+    assert right["thing_top"] == 5
+    assert right["implicit"] == VALUE3
+
+
+@pytest.mark.parametrize(
+    "StyleClass, OtherClass",
+    [
+        (Style, StyleSubclass),
+        (Style, Sibling),
+        (Style, int),
+        (Style, list),
+        (DeprecatedStyle, DeprecatedStyleSubclass),
+        (DeprecatedStyle, Sibling),
+        (DeprecatedStyle, int),
+        (DeprecatedStyle, list),
+    ],
+)
+def test_union_operators_invalid(StyleClass, OtherClass):
+    """Styles do not support | or |= with other style classes or with non-mappings."""
+
+    left = StyleClass()
+    right = OtherClass()
+
+    with pytest.raises(TypeError, match=r"unsupported operand type"):
+        left | right
+
+    with pytest.raises(TypeError, match=r"unsupported operand type"):
+        left |= right
 
 
 def test_deprecated_class_methods():
