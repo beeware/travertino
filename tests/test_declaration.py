@@ -36,11 +36,11 @@ class Style(BaseStyle):
     implicit: str | int | None = validated_property(choices=DEFAULT_VALUE_CHOICES)
 
     # A set of directional properties
-    thing: str | int = directional_property("thing{}", choices=VALUE_CHOICES, initial=0)
-    thing_top: str | int
-    thing_right: str | int
-    thing_bottom: str | int
-    thing_left: str | int
+    thing: str | int = directional_property("thing{}")
+    thing_top: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
+    thing_right: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
+    thing_bottom: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
+    thing_left: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
 
 
 with catch_warnings():

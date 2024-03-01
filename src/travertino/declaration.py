@@ -155,13 +155,7 @@ class directional_property:
         4: [0, 1, 2, 3],
     }
 
-    def __init__(
-        self,
-        name_format,
-        choices=None,
-        initial=None,
-        _create_directions=True,
-    ):
+    def __init__(self, name_format, choices=None, initial=None):
         """Define a property attribute that proxies for top/right/bottom/left alternatives.
 
         :param name_format: The format from which to generate subproperties. "{}" will
@@ -169,30 +163,13 @@ class directional_property:
         :param choices: The available choices.
         :param initial: The initial value for the property.
         """
-        if _create_directions and choices is None:
-            raise TypeError(
-                f"{self.__class__.__name__}.__init__() missing 1 required positional "
-                "argument: 'choices'"
-            )
         self.name_format = name_format
         self.choices = choices
         self.initial = initial
-        self._create_directions = _create_directions
 
     def __set_name__(self, owner, name):
         self.name = name
         owner._ALL_PROPERTIES[owner].add(self.name)
-
-        # Dynamically create the actual properties. They still need to be defined as
-        # class attributes in order to be in the dataclass init, but they don't have to
-        # be set to anything.
-        if self._create_directions:
-            for direction in self.DIRECTIONS:
-                prop_name = self.format(direction)
-                prop = validated_property(self.choices, self.initial)
-                setattr(owner, prop_name, prop)
-                # Not called automatically, since this isn't in the class definition:
-                prop.__set_name__(owner, prop_name)
 
     def format(self, direction):
         return self.name_format.format(f"_{direction}")
@@ -360,7 +337,7 @@ class BaseStyle:
         )
         name_format = name % "{}"
         name = name_format.format("")
-        prop = directional_property(name_format, _create_directions=False)
+        prop = directional_property(name_format)
         setattr(cls, name, prop)
         prop.__set_name__(cls, name)
 
