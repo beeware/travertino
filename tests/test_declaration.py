@@ -36,7 +36,7 @@ class Style(BaseStyle):
     implicit: str | int | None = validated_property(choices=DEFAULT_VALUE_CHOICES)
 
     # A set of directional properties
-    thing: str | int = directional_property("thing{}")
+    thing: tuple[str | int] | str | int = directional_property("thing{}")
     thing_top: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
     thing_right: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
     thing_bottom: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
