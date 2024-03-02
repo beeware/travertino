@@ -284,11 +284,11 @@ class BaseStyle:
             raise KeyError(name)
 
     def items(self):
-        return [
+        return {
             (name, value)
             for name in self._PROPERTIES[self.__class__]
             if (value := getattr(self, f"_{name}", None)) is not None
-        ]
+        }
 
     def keys(self):
         return {

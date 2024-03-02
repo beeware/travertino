@@ -613,7 +613,7 @@ def test_union_operators(StyleClass, instantiate):
         (DeprecatedStyle, list),
     ],
 )
-def test_union_operators_invalid(StyleClass, OtherClass):
+def test_union_operators_invalid_type(StyleClass, OtherClass):
     """Styles do not support | or |= with other style classes or with non-mappings."""
 
     left = StyleClass()
@@ -623,6 +623,25 @@ def test_union_operators_invalid(StyleClass, OtherClass):
         left | right
 
     with pytest.raises(TypeError, match=r"unsupported operand type"):
+        left |= right
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+@pytest.mark.parametrize(
+    "right, error",
+    [
+        ({"implicit": "bogus_value"}, ValueError),
+        ({"bogus_key": 3.12}, NameError),
+    ],
+)
+def test_union_operators_invalid_key_value(StyleClass, right, error):
+    """Operators will accept any mapping, but invalid keys/values are still an error."""
+    left = StyleClass()
+
+    with pytest.raises(error):
+        left | right
+
+    with pytest.raises(error):
         left |= right
 
 
