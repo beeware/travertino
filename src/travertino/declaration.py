@@ -131,9 +131,7 @@ class validated_property:
             )
 
         if value != getattr(obj, f"_{self.name}", None):
-            print("setting prop")
             setattr(obj, f"_{self.name}", value)
-            print("applying prop")
             obj.apply(self.name, value)
 
     def __delete__(self, obj):
