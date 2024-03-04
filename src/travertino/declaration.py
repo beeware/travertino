@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Mapping
+from typing import Mapping, MutableMapping
 from warnings import filterwarnings, warn
 
 from .colors import color
@@ -201,7 +201,7 @@ class directional_property:
             del obj[self.format(direction)]
 
 
-class BaseStyle:
+class BaseStyle(MutableMapping):
     """A base class for style declarations.
 
     Exposes a dict-like interface. Designed for subclasses to be decorated
@@ -283,13 +283,6 @@ class BaseStyle:
         else:
             raise KeyError(name)
 
-    def items(self):
-        return {
-            (name, value)
-            for name in self._PROPERTIES[self.__class__]
-            if (value := getattr(self, f"_{name}", None)) is not None
-        }
-
     def keys(self):
         return {
             name
@@ -297,11 +290,25 @@ class BaseStyle:
             if hasattr(self, f"_{name}")
         }
 
+    def __len__(self):
+        return sum(
+            1 for name in self._PROPERTIES[self.__class__] if hasattr(self, f"_{name}")
+        )
+
+    def __contains__(self, name):
+        return name in self._PROPERTIES[self.__class__] and hasattr(self, f"_{name}")
+
+    def __iter__(self):
+        yield from (
+            name
+            for name in self._PROPERTIES[self.__class__]
+            if hasattr(self, f"_{name}")
+        )
+
     def __or__(self, other):
-        if isinstance(other, BaseStyle):
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-        elif not isinstance(other, Mapping):
+        if not isinstance(other, Mapping) or (
+            isinstance(other, BaseStyle) and self.__class__ is not other.__class__
+        ):
             return NotImplemented
 
         result = self.copy()
@@ -309,10 +316,9 @@ class BaseStyle:
         return result
 
     def __ior__(self, other):
-        if isinstance(other, BaseStyle):
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-        elif not isinstance(other, Mapping):
+        if not isinstance(other, Mapping) or (
+            isinstance(other, BaseStyle) and self.__class__ is not other.__class__
+        ):
             return NotImplemented
 
         self.update(**other)
