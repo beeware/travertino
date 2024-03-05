@@ -1,402 +1,409 @@
-from unittest import TestCase
+from __future__ import annotations
+
+import sys
+from dataclasses import dataclass
 from unittest.mock import Mock
+from warnings import catch_warnings, filterwarnings
+
+import pytest
 
 from travertino.colors import NAMED_COLOR, rgb
 from travertino.constants import GOLDENROD, NONE, REBECCAPURPLE, TOP
-from travertino.declaration import BaseStyle, Choices
+from travertino.declaration import BaseStyle, Choices, validated_property
+
+if sys.version_info < (3, 10):
+    _DATACLASS_KWARGS = {"init": False}
+else:
+    _DATACLASS_KWARGS = {"kw_only": True}
+
+
+def prep_style_class(cls):
+    """Decorator to apply dataclass and mock a style class's apply method."""
+    return mock_apply(dataclass(**_DATACLASS_KWARGS)(cls))
+
+
+def mock_apply(cls):
+    """Only mock apply, without applying dataclass."""
+    orig_init = cls.__init__
+
+    def __init__(self, *args, **kwargs):
+        self.apply = Mock()
+        orig_init(self, *args, **kwargs)
+
+    cls.__init__ = __init__
+    return cls
+
+
+@prep_style_class
+class Style(BaseStyle):
+    none: str = validated_property(choices=Choices(NONE, REBECCAPURPLE), initial=NONE)
+    allow_string: str = validated_property(
+        choices=Choices(string=True), initial="start"
+    )
+    allow_integer: int = validated_property(choices=Choices(integer=True), initial=0)
+    allow_number: float = validated_property(choices=Choices(number=True), initial=0)
+    allow_color: str = validated_property(
+        choices=Choices(color=True), initial="goldenrod"
+    )
+    values: str = validated_property(choices=Choices("a", "b", NONE), initial="a")
+    multiple_choices: str | float = validated_property(
+        choices=Choices("a", "b", NONE, number=True, color=True),
+        initial=None,
+    )
+    string_symbol: str = validated_property(choices=Choices(TOP, NONE))
+
+
+with catch_warnings():
+    filterwarnings("ignore", category=DeprecationWarning)
+
+    @mock_apply
+    class DeprecatedStyle(BaseStyle):
+        pass
+
+    DeprecatedStyle.validated_property(
+        "none", choices=Choices(NONE, REBECCAPURPLE), initial=NONE
+    )
+    DeprecatedStyle.validated_property(
+        "allow_string", choices=Choices(string=True), initial="start"
+    )
+    DeprecatedStyle.validated_property(
+        "allow_integer", choices=Choices(integer=True), initial=0
+    )
+    DeprecatedStyle.validated_property(
+        "allow_number", choices=Choices(number=True), initial=0
+    )
+    DeprecatedStyle.validated_property(
+        "allow_color", choices=Choices(color=True), initial="goldenrod"
+    )
+    DeprecatedStyle.validated_property(
+        "values", choices=Choices("a", "b", NONE), initial="a"
+    )
+    DeprecatedStyle.validated_property(
+        "multiple_choices",
+        choices=Choices("a", "b", NONE, number=True, color=True),
+        initial=None,
+    )
+    DeprecatedStyle.validated_property("string_symbol", choices=Choices(TOP, NONE))
+
+
+def assert_property(obj, name, value):
+    assert getattr(obj, name) == value
+
+    obj.apply.assert_called_once_with(name, value)
+    obj.apply.reset_mock()
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_none(StyleClass):
+    style = StyleClass()
+    assert style.none == NONE
+
+    with pytest.raises(ValueError):
+        style.none = 10
+
+    with pytest.raises(ValueError):
+        style.none = 3.14159
+
+    with pytest.raises(ValueError):
+        style.none = "#112233"
+
+    with pytest.raises(ValueError):
+        style.none = "a"
 
+    with pytest.raises(ValueError):
+        style.none = "b"
 
-class PropertyChoiceTests(TestCase):
-    def assert_property(self, obj, value, check_mock=True):
-        self.assertEqual(obj.prop, value)
-        if check_mock:
-            obj.apply.assert_called_once_with("prop", value)
-            obj.apply.reset_mock()
+    # Set the property to a different explicit value
+    style.none = REBECCAPURPLE
+    assert_property(style, "none", REBECCAPURPLE)
 
-    def test_none(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
+    # A Travertino NONE is an explicit value
+    style.none = NONE
+    assert_property(style, "none", NONE)
 
-        MyObject.validated_property(
-            "prop", choices=Choices(NONE, REBECCAPURPLE), initial=NONE
-        )
+    # Set the property to a different explicit value
+    style.none = REBECCAPURPLE
+    assert_property(style, "none", REBECCAPURPLE)
 
-        obj = MyObject()
-        self.assert_property(obj, NONE, check_mock=False)
-
-        with self.assertRaises(ValueError):
-            obj.prop = 10
+    # A Python None is invalid
+    with pytest.raises(ValueError):
+        style.none = None
 
-        with self.assertRaises(ValueError):
-            obj.prop = 3.14159
+    # The property can be reset
+    del style.none
+    assert_property(style, "none", NONE)
 
-        with self.assertRaises(ValueError):
-            obj.prop = "#112233"
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value 'invalid' for property none; Valid values are: "
+        r"none, rebeccapurple",
+    ):
+        style.none = "invalid"
 
-        with self.assertRaises(ValueError):
-            obj.prop = "a"
 
-        with self.assertRaises(ValueError):
-            obj.prop = "b"
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_allow_string(StyleClass):
+    style = StyleClass()
+    assert style.allow_string == "start"
 
-        # Set the property to a different explicit value
-        obj.prop = REBECCAPURPLE
-        self.assert_property(obj, REBECCAPURPLE)
+    with pytest.raises(ValueError):
+        style.allow_string = 10
 
-        # A Travertino NONE is an explicit value
-        obj.prop = NONE
-        self.assert_property(obj, NONE)
+    with pytest.raises(ValueError):
+        style.allow_string = 3.14159
 
-        # Set the property to a different explicit value
-        obj.prop = REBECCAPURPLE
-        self.assert_property(obj, REBECCAPURPLE)
+    style.allow_string = REBECCAPURPLE
+    assert_property(style, "allow_string", "rebeccapurple")
 
-        # A Python None is invalid
-        with self.assertRaises(ValueError):
-            obj.prop = None
+    style.allow_string = "#112233"
+    assert_property(style, "allow_string", "#112233")
 
-        # The property can be reset
-        del obj.prop
-        self.assert_property(obj, NONE)
+    style.allow_string = "a"
+    assert_property(style, "allow_string", "a")
 
-        # Check the error message
-        try:
-            obj.prop = "invalid"
-            self.fail("Should raise ValueError")
-        except ValueError as v:
-            self.assertEqual(
-                str(v),
-                "Invalid value 'invalid' for property prop; Valid values are: none, rebeccapurple",
-            )
+    style.allow_string = "b"
+    assert_property(style, "allow_string", "b")
 
-    def test_allow_string(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
+    # A Travertino NONE is an explicit string value
+    style.allow_string = NONE
+    assert_property(style, "allow_string", NONE)
 
-        MyObject.validated_property(
-            "prop", choices=Choices(string=True), initial="start"
-        )
+    # A Python None is invalid
+    with pytest.raises(ValueError):
+        style.allow_string = None
 
-        obj = MyObject()
-        self.assertEqual(obj.prop, "start")
+    # The property can be reset
+    del style.allow_string
+    assert_property(style, "allow_string", "start")
 
-        with self.assertRaises(ValueError):
-            obj.prop = 10
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value 99 for property allow_string; Valid values are: <string>",
+    ):
+        style.allow_string = 99
 
-        with self.assertRaises(ValueError):
-            obj.prop = 3.14159
 
-        obj.prop = REBECCAPURPLE
-        self.assert_property(obj, "rebeccapurple")
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_allow_integer(StyleClass):
+    style = StyleClass()
+    assert style.allow_integer == 0
 
-        obj.prop = "#112233"
-        self.assert_property(obj, "#112233")
+    style.allow_integer = 10
+    assert_property(style, "allow_integer", 10)
 
-        obj.prop = "a"
-        self.assert_property(obj, "a")
+    # This is an odd case; Python happily rounds floats to integers.
+    # It's more trouble than it's worth to correct this.
+    style.allow_integer = 3.14159
+    assert_property(style, "allow_integer", 3)
 
-        obj.prop = "b"
-        self.assert_property(obj, "b")
+    with pytest.raises(ValueError):
+        style.allow_integer = REBECCAPURPLE
 
-        # A Travertino NONE is an explicit string value
-        obj.prop = NONE
-        self.assert_property(obj, NONE)
+    with pytest.raises(ValueError):
+        style.allow_integer = "#112233"
 
-        # A Python None is invalid
-        with self.assertRaises(ValueError):
-            obj.prop = None
+    with pytest.raises(ValueError):
+        style.allow_integer = "a"
 
-        # The property can be reset
-        del obj.prop
-        self.assert_property(obj, "start")
+    with pytest.raises(ValueError):
+        style.allow_integer = "b"
 
-        # Check the error message
-        try:
-            obj.prop = 99
-            self.fail("Should raise ValueError")
-        except ValueError as v:
-            self.assertEqual(
-                str(v), "Invalid value 99 for property prop; Valid values are: <string>"
-            )
-
-    def test_allow_integer(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
-
-        MyObject.validated_property("prop", choices=Choices(integer=True), initial=0)
-
-        obj = MyObject()
-        self.assertEqual(obj.prop, 0)
-
-        obj.prop = 10
-        self.assert_property(obj, 10)
-
-        # This is an odd case; Python happily rounds floats to integers.
-        # It's more trouble than it's worth to correct this.
-        obj.prop = 3.14159
-        self.assert_property(obj, 3)
+    # A Travertino NONE is an explicit string value
+    with pytest.raises(ValueError):
+        style.allow_integer = NONE
 
-        with self.assertRaises(ValueError):
-            obj.prop = REBECCAPURPLE
+    # A Python None is invalid
+    with pytest.raises(ValueError):
+        style.allow_integer = None
 
-        with self.assertRaises(ValueError):
-            obj.prop = "#112233"
+    # The property can be reset
+    del style.allow_integer
+    assert_property(style, "allow_integer", 0)
 
-        with self.assertRaises(ValueError):
-            obj.prop = "a"
+    # Check the error message
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value 'invalid' for property allow_integer; Valid values are: <integer>",
+    ):
+        style.allow_integer = "invalid"
 
-        with self.assertRaises(ValueError):
-            obj.prop = "b"
 
-        # A Travertino NONE is an explicit string value
-        with self.assertRaises(ValueError):
-            obj.prop = NONE
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_allow_number(StyleClass):
+    style = StyleClass()
+    assert style.allow_number == 0
 
-        # A Python None is invalid
-        with self.assertRaises(ValueError):
-            obj.prop = None
+    style.allow_number = 10
+    assert_property(style, "allow_number", 10.0)
 
-        # The property can be reset
-        del obj.prop
-        self.assert_property(obj, 0)
+    style.allow_number = 3.14159
+    assert_property(style, "allow_number", 3.14159)
 
-        # Check the error message
-        try:
-            obj.prop = "invalid"
-            self.fail("Should raise ValueError")
-        except ValueError as v:
-            self.assertEqual(
-                str(v),
-                "Invalid value 'invalid' for property prop; Valid values are: <integer>",
-            )
-
-    def test_allow_number(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
-
-        MyObject.validated_property("prop", choices=Choices(number=True), initial=0)
-
-        obj = MyObject()
-        self.assertEqual(obj.prop, 0)
-
-        obj.prop = 10
-        self.assert_property(obj, 10.0)
-
-        obj.prop = 3.14159
-        self.assert_property(obj, 3.14159)
-
-        with self.assertRaises(ValueError):
-            obj.prop = REBECCAPURPLE
+    with pytest.raises(ValueError):
+        style.allow_number = REBECCAPURPLE
 
-        with self.assertRaises(ValueError):
-            obj.prop = "#112233"
+    with pytest.raises(ValueError):
+        style.allow_number = "#112233"
 
-        with self.assertRaises(ValueError):
-            obj.prop = "a"
+    with pytest.raises(ValueError):
+        style.allow_number = "a"
 
-        with self.assertRaises(ValueError):
-            obj.prop = "b"
+    with pytest.raises(ValueError):
+        style.allow_number = "b"
 
-        # A Travertino NONE is an explicit string value
-        with self.assertRaises(ValueError):
-            obj.prop = NONE
+    # A Travertino NONE is an explicit string value
+    with pytest.raises(ValueError):
+        style.allow_number = NONE
 
-        # A Python None is invalid
-        with self.assertRaises(ValueError):
-            obj.prop = None
+    # A Python None is invalid
+    with pytest.raises(ValueError):
+        style.allow_number = None
 
-        # The property can be reset
-        del obj.prop
-        self.assert_property(obj, 0)
+    # The property can be reset
+    del style.allow_number
+    assert_property(style, "allow_number", 0)
 
-        # Check the error message
-        try:
-            obj.prop = "invalid"
-            self.fail("Should raise ValueError")
-        except ValueError as v:
-            self.assertEqual(
-                str(v),
-                "Invalid value 'invalid' for property prop; Valid values are: <number>",
-            )
-
-    def test_allow_color(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
-
-        MyObject.validated_property(
-            "prop", choices=Choices(color=True), initial="goldenrod"
-        )
-
-        obj = MyObject()
-        self.assertEqual(obj.prop, NAMED_COLOR[GOLDENROD])
-
-        with self.assertRaises(ValueError):
-            obj.prop = 10
-
-        with self.assertRaises(ValueError):
-            obj.prop = 3.14159
-
-        obj.prop = REBECCAPURPLE
-        self.assert_property(obj, NAMED_COLOR[REBECCAPURPLE])
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value 'invalid' for property allow_number; Valid values are: <number>",
+    ):
+        style.allow_number = "invalid"
 
-        obj.prop = "#112233"
-        self.assert_property(obj, rgb(0x11, 0x22, 0x33))
 
-        with self.assertRaises(ValueError):
-            obj.prop = "a"
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_allow_color(StyleClass):
+    style = StyleClass()
+    assert style.allow_color == NAMED_COLOR[GOLDENROD]
 
-        with self.assertRaises(ValueError):
-            obj.prop = "b"
+    with pytest.raises(ValueError):
+        style.allow_color = 10
 
-        # A Travertino NONE is an explicit string value
-        with self.assertRaises(ValueError):
-            obj.prop = NONE
+    with pytest.raises(ValueError):
+        style.allow_color = 3.14159
 
-        # A Python None is invalid
-        with self.assertRaises(ValueError):
-            obj.prop = None
+    style.allow_color = REBECCAPURPLE
+    assert_property(style, "allow_color", NAMED_COLOR[REBECCAPURPLE])
 
-        # The property can be reset
-        del obj.prop
-        self.assert_property(obj, NAMED_COLOR["goldenrod"])
+    style.allow_color = "#112233"
+    assert_property(style, "allow_color", rgb(0x11, 0x22, 0x33))
 
-        # Check the error message
-        try:
-            obj.prop = "invalid"
-            self.fail("Should raise ValueError")
-        except ValueError as v:
-            self.assertEqual(
-                str(v),
-                "Invalid value 'invalid' for property prop; Valid values are: <color>",
-            )
-
-    def test_values(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
-
-        MyObject.validated_property(
-            "prop", choices=Choices("a", "b", NONE), initial="a"
-        )
-
-        obj = MyObject()
-        self.assertEqual(obj.prop, "a")
+    with pytest.raises(ValueError):
+        style.allow_color = "a"
 
-        with self.assertRaises(ValueError):
-            obj.prop = 10
-
-        with self.assertRaises(ValueError):
-            obj.prop = 3.14159
-
-        with self.assertRaises(ValueError):
-            obj.prop = REBECCAPURPLE
-
-        with self.assertRaises(ValueError):
-            obj.prop = "#112233"
-
-        obj.prop = NONE
-        self.assert_property(obj, NONE)
-
-        obj.prop = "b"
-        self.assert_property(obj, "b")
-
-        # A Python None is invalid
-        with self.assertRaises(ValueError):
-            obj.prop = None
-
-        # The property can be reset
-        del obj.prop
-        self.assert_property(obj, "a")
-
-        # Check the error message
-        try:
-            obj.prop = "invalid"
-            self.fail("Should raise ValueError")
-        except ValueError as v:
-            self.assertEqual(
-                str(v),
-                "Invalid value 'invalid' for property prop; Valid values are: a, b, none",
-            )
-
-    def test_multiple_choices(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
-
-        MyObject.validated_property(
-            "prop",
-            choices=Choices("a", "b", NONE, number=True, color=True),
-            initial=None,
-        )
-
-        obj = MyObject()
-
-        obj.prop = 10
-        self.assert_property(obj, 10.0)
-
-        obj.prop = 3.14159
-        self.assert_property(obj, 3.14159)
-
-        obj.prop = REBECCAPURPLE
-        self.assert_property(obj, NAMED_COLOR[REBECCAPURPLE])
-
-        obj.prop = "#112233"
-        self.assert_property(obj, rgb(0x11, 0x22, 0x33))
-
-        obj.prop = "a"
-        self.assert_property(obj, "a")
-
-        obj.prop = NONE
-        self.assert_property(obj, NONE)
-
-        obj.prop = "b"
-        self.assert_property(obj, "b")
-
-        # A Python None is invalid
-        with self.assertRaises(ValueError):
-            obj.prop = None
-
-        # The property can be reset
-        # There's no initial value, so the property is None
-        del obj.prop
-        self.assertIsNone(obj.prop)
-
-        # Check the error message
-        try:
-            obj.prop = "invalid"
-            self.fail("Should raise ValueError")
-        except ValueError as v:
-            self.assertEqual(
-                str(v),
-                "Invalid value 'invalid' for property prop; "
-                "Valid values are: a, b, none, <number>, <color>",
-            )
-
-    def test_string_symbol(self):
-        class MyObject(BaseStyle):
-            def __init__(self):
-                self.apply = Mock()
-
-        MyObject.validated_property("prop", choices=Choices(TOP, NONE))
-
-        obj = MyObject()
-
-        # Set a symbolic value using the string value of the symbol
-        # We can't just use the string directly, though - that would
-        # get optimized by the compiler. So we create a string and
-        # transform it into the value we want.
-        val = "TOP"
-        obj.prop = val.lower()
-
-        # Both equality and instance checking should work.
-        self.assertEqual(obj.prop, TOP)
-        self.assertIs(obj.prop, TOP)
-
-    def test_deprecated_default(self):
-        with self.assertWarns(DeprecationWarning):
-            Choices(default=True)
+    with pytest.raises(ValueError):
+        style.allow_color = "b"
+
+    # A Travertino NONE is an explicit string value
+    with pytest.raises(ValueError):
+        style.allow_color = NONE
+
+    # A Python None is invalid
+    with pytest.raises(ValueError):
+        style.allow_color = None
+
+    # The property can be reset
+    del style.allow_color
+    assert_property(style, "allow_color", NAMED_COLOR["goldenrod"])
+
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value 'invalid' for property allow_color; Valid values are: <color>",
+    ):
+        style.allow_color = "invalid"
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_values(StyleClass):
+    style = StyleClass()
+    assert style.values == "a"
+
+    with pytest.raises(ValueError):
+        style.values = 10
+
+    with pytest.raises(ValueError):
+        style.values = 3.14159
+
+    with pytest.raises(ValueError):
+        style.values = REBECCAPURPLE
+
+    with pytest.raises(ValueError):
+        style.values = "#112233"
+
+    style.values = NONE
+    assert_property(style, "values", NONE)
+
+    style.values = "b"
+    assert_property(style, "values", "b")
+
+    # A Python None is invalid
+    with pytest.raises(ValueError):
+        style.values = None
+
+    # The property can be reset
+    del style.values
+    assert_property(style, "values", "a")
+
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value 'invalid' for property values; Valid values are: a, b, none",
+    ):
+        style.values = "invalid"
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_multiple_choices(StyleClass):
+    style = StyleClass()
+
+    style.multiple_choices = 10
+    assert_property(style, "multiple_choices", 10.0)
+
+    style.multiple_choices = 3.14159
+    assert_property(style, "multiple_choices", 3.14159)
+
+    style.multiple_choices = REBECCAPURPLE
+    assert_property(style, "multiple_choices", NAMED_COLOR[REBECCAPURPLE])
+
+    style.multiple_choices = "#112233"
+    assert_property(style, "multiple_choices", rgb(0x11, 0x22, 0x33))
+
+    style.multiple_choices = "a"
+    assert_property(style, "multiple_choices", "a")
+
+    style.multiple_choices = NONE
+    assert_property(style, "multiple_choices", NONE)
+
+    style.multiple_choices = "b"
+    assert_property(style, "multiple_choices", "b")
+
+    # A Python None is invalid
+    with pytest.raises(ValueError):
+        style.multiple_choices = None
+
+    # The property can be reset
+    # There's no initial value, so the property is None
+    del style.multiple_choices
+    assert style.multiple_choices is None
+
+    # Check the error message
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid value 'invalid' for property multiple_choices; Valid values are: "
+        r"a, b, none, <number>, <color>",
+    ):
+        style.multiple_choices = "invalid"
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_string_symbol(StyleClass):
+    style = StyleClass()
+
+    # Set a symbolic value using the string value of the symbol
+    # We can't just use the string directly, though - that would
+    # get optimized by the compiler. So we create a string and
+    # transform it into the value we want.
+    val = "TOP"
+    style.string_symbol = val.lower()
+
+    # Both equality and instance checking should work.
+    assert_property(style, "string_symbol", TOP)
+    assert style.string_symbol is TOP
