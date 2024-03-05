@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Mapping, MutableMapping
+from typing import Mapping
 from warnings import filterwarnings, warn
 
 from .colors import color
@@ -201,7 +201,7 @@ class directional_property:
             del obj[self.format(direction)]
 
 
-class BaseStyle(MutableMapping):
+class BaseStyle:
     """A base class for style declarations.
 
     Exposes a dict-like interface. Designed for subclasses to be decorated
@@ -290,6 +290,19 @@ class BaseStyle(MutableMapping):
             if hasattr(self, f"_{name}")
         }
 
+    def items(self):
+        return [
+            (name, value)
+            for name in self._PROPERTIES[self.__class__]
+            if (value := getattr(self, f"_{name}", None)) is not None
+        ]
+
+    def get(self, name, default=None):
+        try:
+            return getattr(self, name)
+        except AttributeError:
+            return default
+
     def __len__(self):
         return sum(
             1 for name in self._PROPERTIES[self.__class__] if hasattr(self, f"_{name}")
@@ -306,9 +319,10 @@ class BaseStyle(MutableMapping):
         )
 
     def __or__(self, other):
-        if not isinstance(other, Mapping) or (
-            isinstance(other, BaseStyle) and self.__class__ is not other.__class__
-        ):
+        if isinstance(other, BaseStyle):
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+        elif not isinstance(other, Mapping):
             return NotImplemented
 
         result = self.copy()
@@ -316,9 +330,10 @@ class BaseStyle(MutableMapping):
         return result
 
     def __ior__(self, other):
-        if not isinstance(other, Mapping) or (
-            isinstance(other, BaseStyle) and self.__class__ is not other.__class__
-        ):
+        if isinstance(other, BaseStyle):
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+        elif not isinstance(other, Mapping):
             return NotImplemented
 
         self.update(**other)
