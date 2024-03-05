@@ -540,12 +540,6 @@ def test_dict(StyleClass):
     assert "implicit" not in style
     assert "invalid_property" not in style
 
-    # Any valid property can be gotten; unset ones return initial value.
-    assert style.get("thing_left") == 60
-    assert style.get("implicit", "not set") is None
-    # Infalid styles can't be gotten.
-    assert style.get("invalid_property", "not set") == "not set"
-
     # A property can be set, retrieved and cleared using the attribute name
     style["thing-bottom"] = 10
     assert style["thing-bottom"] == 10

@@ -297,12 +297,6 @@ class BaseStyle:
             if (value := getattr(self, f"_{name}", None)) is not None
         ]
 
-    def get(self, name, default=None):
-        try:
-            return getattr(self, name)
-        except AttributeError:
-            return default
-
     def __len__(self):
         return sum(
             1 for name in self._PROPERTIES[self.__class__] if hasattr(self, f"_{name}")
