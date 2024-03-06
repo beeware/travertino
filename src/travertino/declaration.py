@@ -143,6 +143,9 @@ class validated_property:
         else:
             obj.apply(self.name, self.initial)
 
+    def is_set_on(self, obj):
+        return hasattr(obj, f"_{self.name}")
+
 
 class directional_property:
     DIRECTIONS = [TOP, RIGHT, BOTTOM, LEFT]
@@ -199,6 +202,11 @@ class directional_property:
     def __delete__(self, obj):
         for direction in self.DIRECTIONS:
             del obj[self.format(direction)]
+
+    def is_set_on(self, obj):
+        return any(
+            hasattr(obj, self.format(direction)) for direction in self.DIRECTIONS
+        )
 
 
 class BaseStyle:
@@ -303,7 +311,9 @@ class BaseStyle:
         )
 
     def __contains__(self, name):
-        return name in self._PROPERTIES[self.__class__] and hasattr(self, f"_{name}")
+        return name in self._ALL_PROPERTIES[self.__class__] and (
+            getattr(self.__class__, name).is_set_on(self)
+        )
 
     def __iter__(self):
         yield from (

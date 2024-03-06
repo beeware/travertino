@@ -516,7 +516,7 @@ def test_dict(StyleClass):
         thing=(30, 40, 50, 60),
     )
 
-    assert style.keys() == {
+    expected_keys = {
         "explicit_const",
         "explicit_value",
         "thing_bottom",
@@ -524,6 +524,9 @@ def test_dict(StyleClass):
         "thing_right",
         "thing_top",
     }
+
+    assert style.keys() == expected_keys
+
     assert sorted(style.items()) == sorted(
         [
             ("explicit_const", "value2"),
@@ -535,9 +538,18 @@ def test_dict(StyleClass):
         ]
     )
 
-    # Properties that are set are in the keys, and unset or invalid ones aren't.
-    assert "explicit_const" in style
+    # Properties that are set are in the keys.
+    for name in expected_keys:
+        assert name in style
+
+    # Directional properties with one or more of the aliased properties set also count.
+    assert "thing" in style
+
+    # Valid properties that haven't been set are not in the keys.
     assert "implicit" not in style
+    assert "explicit_none" not in style
+
+    # Neither are invalid properties.
     assert "invalid_property" not in style
 
     # A property can be set, retrieved and cleared using the attribute name
