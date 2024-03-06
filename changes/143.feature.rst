@@ -1,1 +1,1 @@
-BaseStyle now inherits from abc.MutableMapping and has all associated methods.
+BaseStyle now supports |, |=, and 'in' operators.
