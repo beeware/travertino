@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Mapping
 from warnings import filterwarnings, warn
 
 from .colors import color
@@ -142,6 +143,9 @@ class validated_property:
         else:
             obj.apply(self.name, self.initial)
 
+    def is_set_on(self, obj):
+        return hasattr(obj, f"_{self.name}")
+
 
 class directional_property:
     DIRECTIONS = [TOP, RIGHT, BOTTOM, LEFT]
@@ -198,6 +202,11 @@ class directional_property:
     def __delete__(self, obj):
         for direction in self.DIRECTIONS:
             del obj[self.format(direction)]
+
+    def is_set_on(self, obj):
+        return any(
+            hasattr(obj, self.format(direction)) for direction in self.DIRECTIONS
+        )
 
 
 class BaseStyle:
@@ -282,6 +291,13 @@ class BaseStyle:
         else:
             raise KeyError(name)
 
+    def keys(self):
+        return {
+            name
+            for name in self._PROPERTIES[self.__class__]
+            if hasattr(self, f"_{name}")
+        }
+
     def items(self):
         return [
             (name, value)
@@ -289,12 +305,43 @@ class BaseStyle:
             if (value := getattr(self, f"_{name}", None)) is not None
         ]
 
-    def keys(self):
-        return {
+    def __len__(self):
+        return sum(
+            1 for name in self._PROPERTIES[self.__class__] if hasattr(self, f"_{name}")
+        )
+
+    def __contains__(self, name):
+        return name in self._ALL_PROPERTIES[self.__class__] and (
+            getattr(self.__class__, name).is_set_on(self)
+        )
+
+    def __iter__(self):
+        yield from (
             name
             for name in self._PROPERTIES[self.__class__]
             if hasattr(self, f"_{name}")
-        }
+        )
+
+    def __or__(self, other):
+        if isinstance(other, BaseStyle):
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+        elif not isinstance(other, Mapping):
+            return NotImplemented
+
+        result = self.copy()
+        result.update(**other)
+        return result
+
+    def __ior__(self, other):
+        if isinstance(other, BaseStyle):
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+        elif not isinstance(other, Mapping):
+            return NotImplemented
+
+        self.update(**other)
+        return self
 
     ######################################################################
     # Get the rendered form of the style declaration

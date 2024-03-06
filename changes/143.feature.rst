@@ -1,0 +1,1 @@
+BaseStyle now supports |, |=, and 'in' operators.
