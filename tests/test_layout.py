@@ -1,4 +1,4 @@
-from unittest import TestCase
+import pytest
 
 from travertino.declaration import BaseStyle
 from travertino.layout import BaseBox, Viewport
@@ -14,94 +14,105 @@ class Style(BaseStyle):
         pass
 
 
-class ViewportTests(TestCase):
-    def test_default(self):
-        viewport = Viewport()
+def test_viewport_default():
+    viewport = Viewport()
 
-        self.assertEqual(viewport.width, 0)
-        self.assertEqual(viewport.height, 0)
-        self.assertEqual(viewport.dpi, None)
-
-    def test_constructor(self):
-        viewport = Viewport(width=640, height=480, dpi=96)
-
-        self.assertEqual(viewport.width, 640)
-        self.assertEqual(viewport.height, 480)
-        self.assertEqual(viewport.dpi, 96)
+    assert viewport.width == 0
+    assert viewport.height == 0
+    assert viewport.dpi is None
 
 
-class BoxTests(TestCase):
-    def setUp(self):
-        self.maxDiff = None
+def test_viewport_constructor():
+    viewport = Viewport(width=640, height=480, dpi=96)
 
-        self.grandchild1_1 = Node(style=Style())
-        self.grandchild1_1.layout.min_content_width = 5
-        self.grandchild1_1.layout.content_width = 10
-        self.grandchild1_1.layout.min_content_height = 8
-        self.grandchild1_1.layout.content_height = 16
+    assert viewport.width == 640
+    assert viewport.height == 480
+    assert viewport.dpi == 96
 
-        self.grandchild1_2 = Node(style=Style())
 
-        self.child1 = Node(
-            style=Style(), children=[self.grandchild1_1, self.grandchild1_2]
-        )
-        self.child1.layout.min_content_width = 5
-        self.child1.layout.content_width = 10
-        self.child1.layout.min_content_height = 8
-        self.child1.layout.content_height = 16
-        self.child2 = Node(style=Style(), children=[])
+class TestBox:
+    pass
 
-        self.node = Node(style=Style(), children=[self.child1, self.child2])
-        self.node.layout.min_content_width = 5
-        self.node.layout.content_width = 10
-        self.node.layout.min_content_height = 8
-        self.node.layout.content_height = 16
 
-    def assertLayout(self, box, expected):
-        actual = {
-            "origin": (box._origin_left, box._origin_top),
-            "min_size": (box.min_width, box.min_height),
-            "size": (box.width, box.height),
-            "content": (box.content_width, box.content_height),
-            "relative": (
-                box.content_top,
-                box.content_right,
-                box.content_bottom,
-                box.content_left,
-            ),
-            "absolute": (
-                box.absolute_content_top,
-                box.absolute_content_right,
-                box.absolute_content_bottom,
-                box.absolute_content_left,
-            ),
-        }
-        self.assertEqual(actual, expected)
+@pytest.fixture
+def box():
+    box = TestBox()
 
-    def test_repr(self):
-        self.node.layout._origin_top = 1
-        self.node.layout._origin_left = 2
-        self.assertEqual(repr(self.node.layout), "<Box (10x16 @ 2,1)>")
+    box.maxDiff = None
 
-    def test_initial(self):
-        # Core attributes have been stored
-        self.assertLayout(
-            self.node.layout,
-            {
-                "origin": (0, 0),
-                "min_size": (5, 8),
-                "size": (10, 16),
-                "content": (10, 16),
-                "relative": (0, 0, 0, 0),
-                "absolute": (0, 10, 16, 0),
-            },
-        )
+    box.grandchild1_1 = Node(style=Style())
+    box.grandchild1_1.layout.min_content_width = 5
+    box.grandchild1_1.layout.content_width = 10
+    box.grandchild1_1.layout.min_content_height = 8
+    box.grandchild1_1.layout.content_height = 16
 
-    def test_set_content_top(self):
-        self.node.layout.content_top = 5
+    box.grandchild1_2 = Node(style=Style())
 
-        self.assertLayout(
-            self.node.layout,
+    box.child1 = Node(style=Style(), children=[box.grandchild1_1, box.grandchild1_2])
+    box.child1.layout.min_content_width = 5
+    box.child1.layout.content_width = 10
+    box.child1.layout.min_content_height = 8
+    box.child1.layout.content_height = 16
+    box.child2 = Node(style=Style(), children=[])
+
+    box.node = Node(style=Style(), children=[box.child1, box.child2])
+    box.node.layout.min_content_width = 5
+    box.node.layout.content_width = 10
+    box.node.layout.min_content_height = 8
+    box.node.layout.content_height = 16
+
+    return box
+
+
+def assert_layout(box, expected):
+    actual = {
+        "origin": (box._origin_left, box._origin_top),
+        "min_size": (box.min_width, box.min_height),
+        "size": (box.width, box.height),
+        "content": (box.content_width, box.content_height),
+        "relative": (
+            box.content_top,
+            box.content_right,
+            box.content_bottom,
+            box.content_left,
+        ),
+        "absolute": (
+            box.absolute_content_top,
+            box.absolute_content_right,
+            box.absolute_content_bottom,
+            box.absolute_content_left,
+        ),
+    }
+    assert actual == expected
+
+
+def test_repr(box):
+    box.node.layout._origin_top = 1
+    box.node.layout._origin_left = 2
+    assert repr(box.node.layout) == "<Box (10x16 @ 2,1)>"
+
+
+def test_initial(box):
+    # Core attributes have been stored
+    assert_layout(
+        box.node.layout,
+        {
+            "origin": (0, 0),
+            "min_size": (5, 8),
+            "size": (10, 16),
+            "content": (10, 16),
+            "relative": (0, 0, 0, 0),
+            "absolute": (0, 10, 16, 0),
+        },
+    )
+
+
+@pytest.mark.parametrize(
+    "dimension, val1, expected1, val2, expected2",
+    [
+        (
+            "content_top",
+            5,
             {
                 "origin": (0, 0),
                 "min_size": (5, 13),
@@ -110,13 +121,7 @@ class BoxTests(TestCase):
                 "relative": (5, 0, 0, 0),
                 "absolute": (5, 10, 21, 0),
             },
-        )
-
-        # Set the top to a new value
-        self.node.layout.content_top = 7
-
-        self.assertLayout(
-            self.node.layout,
+            7,
             {
                 "origin": (0, 0),
                 "min_size": (5, 15),
@@ -125,13 +130,10 @@ class BoxTests(TestCase):
                 "relative": (7, 0, 0, 0),
                 "absolute": (7, 10, 23, 0),
             },
-        )
-
-    def test_set_content_left(self):
-        self.node.layout.content_left = 5
-
-        self.assertLayout(
-            self.node.layout,
+        ),
+        (
+            "content_left",
+            5,
             {
                 "origin": (0, 0),
                 "min_size": (10, 8),
@@ -140,13 +142,7 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 5),
                 "absolute": (0, 15, 16, 5),
             },
-        )
-
-        # Set the left to a new value
-        self.node.layout.content_left = 7
-
-        self.assertLayout(
-            self.node.layout,
+            7,
             {
                 "origin": (0, 0),
                 "min_size": (12, 8),
@@ -155,13 +151,10 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 7),
                 "absolute": (0, 17, 16, 7),
             },
-        )
-
-    def test_set_min_content_width(self):
-        self.node.layout.min_content_width = 8
-
-        self.assertLayout(
-            self.node.layout,
+        ),
+        (
+            "min_content_width",
+            8,
             {
                 "origin": (0, 0),
                 "min_size": (8, 8),
@@ -170,13 +163,7 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 10, 16, 0),
             },
-        )
-
-        # Set the min width to a new value
-        self.node.layout.min_content_width = 9
-
-        self.assertLayout(
-            self.node.layout,
+            9,
             {
                 "origin": (0, 0),
                 "min_size": (9, 8),
@@ -185,13 +172,10 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 10, 16, 0),
             },
-        )
-
-    def test_set_content_width(self):
-        self.node.layout.content_width = 5
-
-        self.assertLayout(
-            self.node.layout,
+        ),
+        (
+            "content_width",
+            5,
             {
                 "origin": (0, 0),
                 "min_size": (5, 8),
@@ -200,13 +184,7 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 5, 16, 0),
             },
-        )
-
-        # Set the width to a new value
-        self.node.layout.content_width = 7
-
-        self.assertLayout(
-            self.node.layout,
+            7,
             {
                 "origin": (0, 0),
                 "min_size": (5, 8),
@@ -215,13 +193,10 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 7, 16, 0),
             },
-        )
-
-    def test_set_min_content_height(self):
-        self.node.layout.min_content_height = 7
-
-        self.assertLayout(
-            self.node.layout,
+        ),
+        (
+            "min_content_height",
+            7,
             {
                 "origin": (0, 0),
                 "min_size": (5, 7),
@@ -230,13 +205,7 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 10, 16, 0),
             },
-        )
-
-        # Set the min height to a new value
-        self.node.layout.min_content_height = 8
-
-        self.assertLayout(
-            self.node.layout,
+            8,
             {
                 "origin": (0, 0),
                 "min_size": (5, 8),
@@ -245,13 +214,10 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 10, 16, 0),
             },
-        )
-
-    def test_set_content_height(self):
-        self.node.layout.content_height = 10
-
-        self.assertLayout(
-            self.node.layout,
+        ),
+        (
+            "content_height",
+            10,
             {
                 "origin": (0, 0),
                 "min_size": (5, 8),
@@ -260,13 +226,7 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 10, 10, 0),
             },
-        )
-
-        # Set the height to a new value
-        self.node.layout.content_height = 12
-
-        self.assertLayout(
-            self.node.layout,
+            12,
             {
                 "origin": (0, 0),
                 "min_size": (5, 8),
@@ -275,164 +235,173 @@ class BoxTests(TestCase):
                 "relative": (0, 0, 0, 0),
                 "absolute": (0, 10, 12, 0),
             },
-        )
+        ),
+    ],
+)
+def test_set_content_dimension(box, dimension, val1, expected1, val2, expected2):
+    setattr(box.node.layout, dimension, val1)
+    assert_layout(box.node.layout, expected1)
 
-    def test_descendent_offsets(self):
-        self.node.layout.content_top = 7
-        self.node.layout.content_left = 8
+    # Set to a new value
+    setattr(box.node.layout, dimension, val2)
+    assert_layout(box.node.layout, expected2)
 
-        self.child1.layout.content_top = 9
-        self.child1.layout.content_left = 10
 
-        self.grandchild1_1.layout.content_top = 11
-        self.grandchild1_1.layout.content_left = 12
+def test_descendent_offsets(box):
+    box.node.layout.content_top = 7
+    box.node.layout.content_left = 8
 
-        self.assertLayout(
-            self.node.layout,
-            {
-                "origin": (0, 0),
-                "min_size": (13, 15),
-                "size": (18, 23),
-                "content": (10, 16),
-                "relative": (7, 0, 0, 8),
-                "absolute": (7, 18, 23, 8),
-            },
-        )
+    box.child1.layout.content_top = 9
+    box.child1.layout.content_left = 10
 
-        self.assertLayout(
-            self.child1.layout,
-            {
-                "origin": (8, 7),
-                "min_size": (15, 17),
-                "size": (20, 25),
-                "content": (10, 16),
-                "relative": (9, 0, 0, 10),
-                "absolute": (16, 28, 32, 18),
-            },
-        )
+    box.grandchild1_1.layout.content_top = 11
+    box.grandchild1_1.layout.content_left = 12
 
-        self.assertLayout(
-            self.grandchild1_1.layout,
-            {
-                "origin": (18, 16),
-                "min_size": (17, 19),
-                "size": (22, 27),
-                "content": (10, 16),
-                "relative": (11, 0, 0, 12),
-                "absolute": (27, 40, 43, 30),
-            },
-        )
+    assert_layout(
+        box.node.layout,
+        {
+            "origin": (0, 0),
+            "min_size": (13, 15),
+            "size": (18, 23),
+            "content": (10, 16),
+            "relative": (7, 0, 0, 8),
+            "absolute": (7, 18, 23, 8),
+        },
+    )
 
-        # Modify the grandchild position
-        self.grandchild1_1.layout.content_top = 13
-        self.grandchild1_1.layout.content_left = 14
+    assert_layout(
+        box.child1.layout,
+        {
+            "origin": (8, 7),
+            "min_size": (15, 17),
+            "size": (20, 25),
+            "content": (10, 16),
+            "relative": (9, 0, 0, 10),
+            "absolute": (16, 28, 32, 18),
+        },
+    )
 
-        # Only the grandchild position has changed.
-        self.assertLayout(
-            self.node.layout,
-            {
-                "origin": (0, 0),
-                "min_size": (13, 15),
-                "size": (18, 23),
-                "content": (10, 16),
-                "relative": (7, 0, 0, 8),
-                "absolute": (7, 18, 23, 8),
-            },
-        )
+    assert_layout(
+        box.grandchild1_1.layout,
+        {
+            "origin": (18, 16),
+            "min_size": (17, 19),
+            "size": (22, 27),
+            "content": (10, 16),
+            "relative": (11, 0, 0, 12),
+            "absolute": (27, 40, 43, 30),
+        },
+    )
 
-        self.assertLayout(
-            self.child1.layout,
-            {
-                "origin": (8, 7),
-                "min_size": (15, 17),
-                "size": (20, 25),
-                "content": (10, 16),
-                "relative": (9, 0, 0, 10),
-                "absolute": (16, 28, 32, 18),
-            },
-        )
+    # Modify the grandchild position
+    box.grandchild1_1.layout.content_top = 13
+    box.grandchild1_1.layout.content_left = 14
 
-        self.assertLayout(
-            self.grandchild1_1.layout,
-            {
-                "origin": (18, 16),
-                "min_size": (19, 21),
-                "size": (24, 29),
-                "content": (10, 16),
-                "relative": (13, 0, 0, 14),
-                "absolute": (29, 42, 45, 32),
-            },
-        )
+    # Only the grandchild position has changed.
+    assert_layout(
+        box.node.layout,
+        {
+            "origin": (0, 0),
+            "min_size": (13, 15),
+            "size": (18, 23),
+            "content": (10, 16),
+            "relative": (7, 0, 0, 8),
+            "absolute": (7, 18, 23, 8),
+        },
+    )
 
-        # Modify the child position
-        self.child1.layout.content_top = 15
-        self.child1.layout.content_left = 16
+    assert_layout(
+        box.child1.layout,
+        {
+            "origin": (8, 7),
+            "min_size": (15, 17),
+            "size": (20, 25),
+            "content": (10, 16),
+            "relative": (9, 0, 0, 10),
+            "absolute": (16, 28, 32, 18),
+        },
+    )
 
-        # The child and grandchild position has changed.
-        self.assertLayout(
-            self.node.layout,
-            {
-                "origin": (0, 0),
-                "min_size": (13, 15),
-                "size": (18, 23),
-                "content": (10, 16),
-                "relative": (7, 0, 0, 8),
-                "absolute": (7, 18, 23, 8),
-            },
-        )
+    assert_layout(
+        box.grandchild1_1.layout,
+        {
+            "origin": (18, 16),
+            "min_size": (19, 21),
+            "size": (24, 29),
+            "content": (10, 16),
+            "relative": (13, 0, 0, 14),
+            "absolute": (29, 42, 45, 32),
+        },
+    )
 
-        self.assertLayout(
-            self.child1.layout,
-            {
-                "origin": (8, 7),
-                "min_size": (21, 23),
-                "size": (26, 31),
-                "content": (10, 16),
-                "relative": (15, 0, 0, 16),
-                "absolute": (22, 34, 38, 24),
-            },
-        )
+    # Modify the child position
+    box.child1.layout.content_top = 15
+    box.child1.layout.content_left = 16
 
-        self.assertLayout(
-            self.grandchild1_1.layout,
-            {
-                "origin": (24, 22),
-                "min_size": (19, 21),
-                "size": (24, 29),
-                "content": (10, 16),
-                "relative": (13, 0, 0, 14),
-                "absolute": (35, 48, 51, 38),
-            },
-        )
+    # The child and grandchild positions have changed.
+    assert_layout(
+        box.node.layout,
+        {
+            "origin": (0, 0),
+            "min_size": (13, 15),
+            "size": (18, 23),
+            "content": (10, 16),
+            "relative": (7, 0, 0, 8),
+            "absolute": (7, 18, 23, 8),
+        },
+    )
 
-    def test_absolute_equalities(self):
-        # Move the box around and set some borders.
-        self.node.layout.origin_top = 100
-        self.node.layout.origin_left = 200
+    assert_layout(
+        box.child1.layout,
+        {
+            "origin": (8, 7),
+            "min_size": (21, 23),
+            "size": (26, 31),
+            "content": (10, 16),
+            "relative": (15, 0, 0, 16),
+            "absolute": (22, 34, 38, 24),
+        },
+    )
 
-        self.node.layout.content_top = 50
-        self.node.layout.content_left = 75
-        self.node.layout.content_right = 42
-        self.node.layout.content_bottom = 37
+    assert_layout(
+        box.grandchild1_1.layout,
+        {
+            "origin": (24, 22),
+            "min_size": (19, 21),
+            "size": (24, 29),
+            "content": (10, 16),
+            "relative": (13, 0, 0, 14),
+            "absolute": (35, 48, 51, 38),
+        },
+    )
 
-        self.assertEqual(
-            self.node.layout.absolute_content_left + self.node.layout.content_width,
-            self.node.layout.absolute_content_right,
-        )
-        self.assertEqual(
-            self.node.layout.absolute_content_top + self.node.layout.content_height,
-            self.node.layout.absolute_content_bottom,
-        )
 
-        self.assertEqual(
-            self.node.layout.content_left
-            + self.node.layout.content_width
-            + self.node.layout.content_right,
-            self.node.layout.width,
-        )
-        self.assertEqual(
-            self.node.layout.content_top
-            + self.node.layout.content_height
-            + self.node.layout.content_bottom,
-            self.node.layout.height,
-        )
+def test_absolute_equalities(box):
+    # Move the box around and set some borders.
+    layout = box.node.layout
+
+    layout.origin_top = 100
+    layout.origin_left = 200
+
+    layout.content_top = 50
+    layout.content_left = 75
+    layout.content_right = 42
+    layout.content_bottom = 37
+
+    assert (
+        layout.absolute_content_left + layout.content_width
+        == layout.absolute_content_right
+    )
+    assert (
+        layout.absolute_content_top + layout.content_height
+        == layout.absolute_content_bottom
+    )
+
+    assert (
+        layout.content_left + layout.content_width + layout.content_right
+        == layout.width
+    )
+    assert (
+        layout.content_top + layout.content_height + layout.content_bottom
+        == layout.height
+    )
