@@ -132,7 +132,11 @@ def test_make_small_caps():
 
 @pytest.mark.parametrize(
     "weight, result",
-    [(BOLD, BOLD), ("bold", BOLD), ("something else", NORMAL)],
+    [
+        (BOLD, BOLD),
+        ("bold", BOLD),
+        ("something else", NORMAL),
+    ],
 )
 def test_weight(weight, result):
     assert_font(
