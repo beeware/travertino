@@ -45,7 +45,14 @@ def test_rgb(value, expected):
 
 
 @pytest.mark.parametrize(
-    "value", ["10, 20", "a, 10, 20", "10, b, 20", "10, 20, c", "10, 20, 30, 0.5"]
+    "value",
+    [
+        "10, 20",
+        "a, 10, 20",
+        "10, b, 20",
+        "10, 20, c",
+        "10, 20, 30, 0.5",
+    ],
 )
 def test_rgb_invalid(value):
     with pytest.raises(ValueError):
@@ -86,14 +93,27 @@ def test_rgba_invalid(value):
         color(f"rgba({value})")
 
 
-@pytest.mark.parametrize("value", ["1,20%,30%", "1, 20%, 30%", "1, 20% , 30%"])
+@pytest.mark.parametrize(
+    "value",
+    [
+        "1,20%,30%",
+        "1, 20%, 30%",
+        "1, 20% , 30%",
+    ],
+)
 def test_hsl(value):
     assert_equal_hsl(f"hsl({value})", hsl(1, 0.2, 0.3))
 
 
 @pytest.mark.parametrize(
     "value",
-    ["1, 20%", "a, 20%, 30%", "1, a, 30%", "1, 20%, a)", "1, 20%, 30%, 0.5)"],
+    [
+        "1, 20%",
+        "a, 20%, 30%",
+        "1, a, 30%",
+        "1, 20%, a)",
+        "1, 20%, 30%, 0.5)",
+    ],
 )
 def test_hsl_invalid(value):
     with pytest.raises(ValueError):
@@ -101,7 +121,12 @@ def test_hsl_invalid(value):
 
 
 @pytest.mark.parametrize(
-    "value", ["1,20%,30%,0.5", "1, 20%, 30%, 0.5", " 1, 20% , 30% , 0.5"]
+    "value",
+    [
+        "1,20%,30%,0.5",
+        "1, 20%, 30%, 0.5",
+        " 1, 20% , 30% , 0.5",
+    ],
 )
 def test_hsla(value):
     assert_equal_hsl(f"hsla({value})", hsla(1, 0.2, 0.3, 0.5))
