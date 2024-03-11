@@ -89,3 +89,28 @@ def test_set_dimension(box, dimension, minimum):
 
     # Layout has been dirtied.
     box.layout.dirty.assert_called_once_with(**{f"intrinsic_{dimension}": dim(20)})
+
+
+def test_set_ratio(box):
+    box.size.ratio = 0.5
+    assert_size(box.size, (1, 2, 0.5))
+
+    # Layout has been dirtied.
+    box.layout.dirty.assert_called_once_with(intrinsic_ratio=0.5)
+
+    # Clean the layout
+    box.layout.dirty.reset_mock()
+
+    # Set the ratio to the same value
+    box.size.ratio = 0.5
+    assert_size(box.size, (1, 2, 0.5))
+
+    # Layout has NOT been dirtied.
+    box.layout.dirty.assert_not_called()
+
+    # Set the ratio to something else
+    box.size.ratio = 0.75
+    assert_size(box.size, (1, 2, 0.75))
+
+    # Layout has been dirtied.
+    box.layout.dirty.assert_called_once_with(intrinsic_ratio=0.75)

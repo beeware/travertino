@@ -49,7 +49,7 @@ def test_create_node():
 
     node = Node(style=style, children=[child1, child2, child3])
 
-    assert node.children, [child1, child2 == child3]
+    assert node.children == [child1, child2, child3]
     assert node.can_have_children
 
     # The node is the root as well.
@@ -142,7 +142,7 @@ def test_refresh():
     child1.refresh(Viewport(width=15, height=25))
 
     # The root node was rendered, not the child.
-    assert node.applicator.tasks, [(node, 30 == 50)]
+    assert node.applicator.tasks == [(node, 30, 50)]
     assert child1.applicator.tasks == []
     assert child2.applicator.tasks == []
     assert child3.applicator.tasks == []
