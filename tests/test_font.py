@@ -64,7 +64,12 @@ def test_invalid_construction():
 
 @pytest.mark.parametrize(
     "family",
-    ["Comics Sans", "Wingdings", "'Comic Sans'", '"Comic Sans"'],
+    [
+        "Comics Sans",
+        "Wingdings",
+        "'Comic Sans'",
+        '"Comic Sans"',
+    ],
 )
 def test_family(family):
     normalized_family = family.replace("'", "").replace('"', "")
@@ -92,13 +97,25 @@ def test_style(style, result_style):
     )
 
 
-@pytest.mark.parametrize("kwargs", [{}, {"style": ITALIC}])
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"style": ITALIC},
+    ],
+)
 def test_make_normal_style(kwargs):
     f = Font("Comic Sans", 12, **kwargs)
     assert_font(f.normal_style(), "Comic Sans", 12, NORMAL, NORMAL, NORMAL)
 
 
-@pytest.mark.parametrize("method, result", [("italic", ITALIC), ("oblique", OBLIQUE)])
+@pytest.mark.parametrize(
+    "method, result",
+    [
+        ("italic", ITALIC),
+        ("oblique", OBLIQUE),
+    ],
+)
 def test_make_slanted(method, result):
     f = Font("Comic Sans", 12)
     assert_font(getattr(f, method)(), "Comic Sans", 12, result, NORMAL, NORMAL)
