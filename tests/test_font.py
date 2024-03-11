@@ -106,7 +106,11 @@ def test_make_slanted(method, result):
 
 @pytest.mark.parametrize(
     "variant, result",
-    [(SMALL_CAPS, SMALL_CAPS), ("small-caps", SMALL_CAPS), ("something else", NORMAL)],
+    [
+        (SMALL_CAPS, SMALL_CAPS),
+        ("small-caps", SMALL_CAPS),
+        ("something else", NORMAL),
+    ],
 )
 def test_variant(variant, result):
     assert_font(
@@ -222,7 +226,10 @@ def test_parse_normal(string, style, variant):
 
 @pytest.mark.parametrize(
     "string, style",
-    [("italic 12pt Comic Sans", ITALIC), ("oblique 12pt Comic Sans", OBLIQUE)],
+    [
+        ("italic 12pt Comic Sans", ITALIC),
+        ("oblique 12pt Comic Sans", OBLIQUE),
+    ],
 )
 def test_parse_style(string, style):
     assert_font(font(string), "Comic Sans", 12, style, NORMAL, NORMAL)
