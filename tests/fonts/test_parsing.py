@@ -1,6 +1,6 @@
 import pytest
 
-from tests.test_font import assert_font
+from tests.fonts.test_constructor import assert_font
 from travertino.constants import (
     BOLD,
     ITALIC,
