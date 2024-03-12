@@ -72,7 +72,10 @@ def test_normal(string, style, variant):
 
 @pytest.mark.parametrize(
     "string, style",
-    [("italic 12pt Comic Sans", ITALIC), ("oblique 12pt Comic Sans", OBLIQUE)],
+    [
+        ("italic 12pt Comic Sans", ITALIC),
+        ("oblique 12pt Comic Sans", OBLIQUE),
+    ],
 )
 def test_style(string, style):
     assert_font(font(string), "Comic Sans", 12, style, NORMAL, NORMAL)
