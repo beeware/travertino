@@ -157,7 +157,7 @@ class directional_property:
         4: [0, 1, 2, 3],
     }
 
-    def __init__(self, name_format, choices=None, initial=None):
+    def __init__(self, name_format):
         """Define a property attribute that proxies for top/right/bottom/left alternatives.
 
         :param name_format: The format from which to generate subproperties. "{}" will
@@ -166,8 +166,6 @@ class directional_property:
         :param initial: The initial value for the property.
         """
         self.name_format = name_format
-        self.choices = choices
-        self.initial = initial
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -248,8 +246,8 @@ class BaseStyle:
     ######################################################################
 
     def reapply(self):
-        for style in self._PROPERTIES[self.__class__]:
-            self.apply(style, getattr(self, style))
+        for name in self._PROPERTIES[self.__class__]:
+            self.apply(name, self[name])
 
     def update(self, **styles):
         "Set multiple styles on the style definition."
@@ -292,23 +290,17 @@ class BaseStyle:
             raise KeyError(name)
 
     def keys(self):
-        return {
-            name
-            for name in self._PROPERTIES[self.__class__]
-            if hasattr(self, f"_{name}")
-        }
+        return {name for name in self._PROPERTIES[self.__class__] if name in self}
 
     def items(self):
         return [
-            (name, value)
+            (name, self[name])
             for name in self._PROPERTIES[self.__class__]
-            if (value := getattr(self, f"_{name}", None)) is not None
+            if name in self
         ]
 
     def __len__(self):
-        return sum(
-            1 for name in self._PROPERTIES[self.__class__] if hasattr(self, f"_{name}")
-        )
+        return sum(1 for name in self._PROPERTIES[self.__class__] if name in self)
 
     def __contains__(self, name):
         return name in self._ALL_PROPERTIES[self.__class__] and (
@@ -316,11 +308,7 @@ class BaseStyle:
         )
 
     def __iter__(self):
-        yield from (
-            name
-            for name in self._PROPERTIES[self.__class__]
-            if hasattr(self, f"_{name}")
-        )
+        yield from (name for name in self._PROPERTIES[self.__class__] if name in self)
 
     def __or__(self, other):
         if isinstance(other, BaseStyle):
