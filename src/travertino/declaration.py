@@ -101,8 +101,8 @@ class validated_property:
 
     def __set_name__(self, owner, name):
         self.name = name
-        owner._PROPERTIES[owner].add(name)
-        owner._ALL_PROPERTIES[owner].add(name)
+        owner._BASE_PROPERTIES[owner].add(name)
+        owner._BASE_ALL_PROPERTIES[owner].add(name)
 
     def __get__(self, obj, objtype=None):
         if obj is None:
@@ -169,7 +169,7 @@ class directional_property:
 
     def __set_name__(self, owner, name):
         self.name = name
-        owner._ALL_PROPERTIES[owner].add(self.name)
+        owner._BASE_ALL_PROPERTIES[owner].add(self.name)
 
     def format(self, direction):
         return self.name_format.format(f"_{direction}")
@@ -216,8 +216,13 @@ class BaseStyle:
     to still get the keyword-only behavior from the included __init__.
     """
 
-    _PROPERTIES = defaultdict(set)
-    _ALL_PROPERTIES = defaultdict(set)
+    _BASE_PROPERTIES = defaultdict(set)
+    _BASE_ALL_PROPERTIES = defaultdict(set)
+
+    def __init_subclass__(cls):
+        # Give the subclass a direct reference to its properties.
+        cls._PROPERTIES = cls._BASE_PROPERTIES[cls]
+        cls._ALL_PROPERTIES = cls._BASE_ALL_PROPERTIES[cls]
 
     # Fallback in case subclass isn't decorated as subclass (probably from using
     # previous API) or for pre-3.10, before kw_only argument existed.
@@ -246,14 +251,14 @@ class BaseStyle:
     ######################################################################
 
     def reapply(self):
-        for name in self._PROPERTIES[self.__class__]:
+        for name in self._PROPERTIES:
             self.apply(name, self[name])
 
     def update(self, **styles):
         "Set multiple styles on the style definition."
         for name, value in styles.items():
             name = name.replace("-", "_")
-            if name not in self._ALL_PROPERTIES[self.__class__]:
+            if name not in self._ALL_PROPERTIES:
                 raise NameError(f"Unknown style {name}")
 
             setattr(self, name, value)
@@ -262,53 +267,45 @@ class BaseStyle:
         "Create a duplicate of this style declaration."
         dup = self.__class__()
         dup._applicator = applicator
-        for style in self._PROPERTIES[self.__class__]:
-            try:
-                setattr(dup, style, getattr(self, f"_{style}"))
-            except AttributeError:
-                pass
+        dup.update(**self)
         return dup
 
     def __getitem__(self, name):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES[self.__class__]:
+        if name in self._PROPERTIES:
             return getattr(self, name)
         raise KeyError(name)
 
     def __setitem__(self, name, value):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES[self.__class__]:
+        if name in self._PROPERTIES:
             setattr(self, name, value)
         else:
             raise KeyError(name)
 
     def __delitem__(self, name):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES[self.__class__]:
+        if name in self._PROPERTIES:
             delattr(self, name)
         else:
             raise KeyError(name)
 
     def keys(self):
-        return {name for name in self._PROPERTIES[self.__class__] if name in self}
+        return {name for name in self._PROPERTIES if name in self}
 
     def items(self):
-        return [
-            (name, self[name])
-            for name in self._PROPERTIES[self.__class__]
-            if name in self
-        ]
+        return [(name, self[name]) for name in self._PROPERTIES if name in self]
 
     def __len__(self):
-        return sum(1 for name in self._PROPERTIES[self.__class__] if name in self)
+        return sum(1 for name in self._PROPERTIES if name in self)
 
     def __contains__(self, name):
-        return name in self._ALL_PROPERTIES[self.__class__] and (
+        return name in self._ALL_PROPERTIES and (
             getattr(self.__class__, name).is_set_on(self)
         )
 
     def __iter__(self):
-        yield from (name for name in self._PROPERTIES[self.__class__] if name in self)
+        yield from (name for name in self._PROPERTIES if name in self)
 
     def __or__(self, other):
         if isinstance(other, BaseStyle):
@@ -335,14 +332,9 @@ class BaseStyle:
     # Get the rendered form of the style declaration
     ######################################################################
     def __str__(self):
-        non_default = []
-        for name in self._PROPERTIES[self.__class__]:
-            try:
-                non_default.append((name.replace("_", "-"), getattr(self, f"_{name}")))
-            except AttributeError:
-                pass
-
-        return "; ".join(f"{name}: {value}" for name, value in sorted(non_default))
+        return "; ".join(
+            f"{name.replace('_', '-')}: {value}" for name, value in sorted(self.items())
+        )
 
     ######################################################################
     # Backwards compatibility
