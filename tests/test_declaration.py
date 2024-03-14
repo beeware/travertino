@@ -10,6 +10,7 @@ from travertino.declaration import (
     BaseStyle,
     Choices,
     directional_property,
+    series_property,
     validated_property,
 )
 
@@ -41,6 +42,9 @@ class Style(BaseStyle):
     thing_right: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
     thing_bottom: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
     thing_left: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
+
+    # Doesn't need to be tested in deprecated API:
+    series_prop: list[str] = series_property(choices=VALUE_CHOICES, initial=(VALUE2,))
 
 
 with catch_warnings():
@@ -441,6 +445,43 @@ def test_directional_property(StyleClass):
             call("thing_left", 0),
         ]
     )
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ((VALUE1,), (VALUE1,)),
+        ((VALUE1, VALUE3), (VALUE1, VALUE3)),
+        ((VALUE2, VALUE1), (VALUE2, VALUE1)),
+        ((VALUE2, VALUE3, 1, 2, VALUE1), (VALUE2, VALUE3, 1, 2, VALUE1)),
+        # Duplicates are removed, even if provided in different forms; order is preserved.
+        ((VALUE3, 1, VALUE3, "1", True, " 1", VALUE2), (VALUE3, 1, VALUE2)),
+        # Other sequences should work too.
+        ([VALUE1, VALUE3], (VALUE1, VALUE3)),
+    ],
+)
+def test_series_property(value, expected):
+    style = Style()
+    style.series_prop = value
+    assert style.series_prop == expected
+
+
+@pytest.mark.parametrize(
+    "value, error",
+    [
+        (VALUE2, TypeError),
+        (5, TypeError),
+        # Fails because it's only a generator, not a comprehension:
+        ((i for i in [VALUE1, VALUE3]), TypeError),
+        ((VALUE3, VALUE1, "bogus"), ValueError),
+        ((), ValueError),
+        ([], ValueError),
+    ],
+)
+def test_series_property_invalid(value, error):
+    style = Style()
+    with pytest.raises(error):
+        style.series_prop = value
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])

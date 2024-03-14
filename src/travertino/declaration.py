@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Mapping
+from typing import Mapping, Sequence
 from warnings import filterwarnings, warn
 
 from .colors import color
@@ -91,7 +91,7 @@ class validated_property:
             # If an initial value has been provided, it must be consistent with
             # the choices specified.
             if initial is not None:
-                self.initial = choices.validate(initial)
+                self.initial = self.validate(initial)
         except ValueError:
             # Unfortunately, __set_name__ hasn't been called yet, so we don't know the
             # property's name.
@@ -120,11 +120,11 @@ class validated_property:
         if value is None:
             raise ValueError(
                 "Python `None` cannot be used as a style value; "
-                f"to reset a property, use del `style.{self.name}`"
+                f"to reset a property, use del `style.{self.name}`."
             )
 
         try:
-            value = self.choices.validate(value)
+            value = self.validate(value)
         except ValueError:
             raise ValueError(
                 f"Invalid value {value!r} for property {self.name}; "
@@ -143,8 +143,35 @@ class validated_property:
         else:
             obj.apply(self.name, self.initial)
 
+    def validate(self, value):
+        return self.choices.validate(value)
+
     def is_set_on(self, obj):
         return hasattr(obj, f"_{self.name}")
+
+
+class series_property(validated_property):
+    def validate(self, value):
+        if isinstance(value, str) or not isinstance(value, Sequence):
+            raise TypeError(
+                f"Value for series property {self.name} must be a non-string sequence."
+            )
+
+        if not value:
+            raise ValueError(
+                "Series properties cannot be set to an empty sequence; "
+                f"to reset a property, use del `style.{self.name}`."
+            )
+
+        # Remove duplicates and preserve order:
+        result = []
+        seen = set()
+        for item in value:
+            if (item := self.choices.validate(item)) not in seen:
+                seen.add(item)
+                result.append(item)
+
+        return tuple(result)
 
 
 class directional_property:
@@ -365,35 +392,3 @@ class BaseStyle:
         prop = directional_property(name_format)
         setattr(cls, name, prop)
         prop.__set_name__(cls, name)
-
-    # Kept here for reference, for eventual implementation?
-
-    # def list_property(name, choices, initial=None):
-    #     "Define a property attribute that accepts a list of independently validated values."
-    #     initial = choices.validate(initial)
-
-    #     def getter(self):
-    #         return getattr(self, '_%s' % name, initial)
-
-    #     def setter(self, values):
-    #         try:
-    #             value = [choices.validate(v) for v in values.split(',')]
-    #         except ValueError:
-    #             raise ValueError("Invalid value in for list property '%s'; Valid values are: %s" % (
-    #                 name, choices
-    #             ))
-
-    #         if value != getattr(self, '_%s' % name, initial):
-    #             setattr(self, '_%s' % name, value)
-    #             self.apply(name, value)
-
-    #     def deleter(self):
-    #         try:
-    #             delattr(self, '_%s' % name)
-    #             self.apply(name, value)
-    #         except AttributeError:
-    #             # Attribute doesn't exist
-    #             pass
-
-    #     _PROPERTIES.add(name)
-    #     return property(getter, setter, deleter)
