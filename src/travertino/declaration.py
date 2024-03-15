@@ -9,6 +9,29 @@ from .constants import BOTTOM, LEFT, RIGHT, TOP
 filterwarnings("default", category=DeprecationWarning)
 
 
+class ImmutableList:
+    def __init__(self, iterable):
+        self._data = [*iterable]
+
+    def __getitem__(self, index):
+        return self._data[index]
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __eq__(self, other):
+        return self._data == other
+
+    def __str__(self):
+        return str(self._data)
+
+    def __repr__(self):
+        return repr(self._data)
+
+
 class Choices:
     "A class to define allowable data types for a property"
 
@@ -154,11 +177,11 @@ class validated_property:
         return hasattr(obj, f"_{self.name}")
 
 
-class series_property(validated_property):
+class list_property(validated_property):
     def validate(self, value):
         if isinstance(value, str) or not isinstance(value, Sequence):
             raise TypeError(
-                f"Value for series property {self._name_if_set} must be a non-string "
+                f"Value for list property {self._name_if_set} must be a non-string "
                 "sequence."
             )
 
@@ -181,7 +204,7 @@ class series_property(validated_property):
                 )
             result.append(item)
 
-        return tuple(result)
+        return ImmutableList(result)
 
 
 class directional_property:

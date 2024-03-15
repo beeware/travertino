@@ -10,7 +10,7 @@ from travertino.declaration import (
     BaseStyle,
     Choices,
     directional_property,
-    series_property,
+    list_property,
     validated_property,
 )
 
@@ -44,7 +44,7 @@ class Style(BaseStyle):
     thing_left: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
 
     # Doesn't need to be tested in deprecated API:
-    series_prop: list[str] = series_property(choices=VALUE_CHOICES, initial=(VALUE2,))
+    list_prop: list[str] = list_property(choices=VALUE_CHOICES, initial=(VALUE2,))
 
 
 with catch_warnings():
@@ -450,23 +450,23 @@ def test_directional_property(StyleClass):
 @pytest.mark.parametrize(
     "value, expected",
     [
-        ((VALUE1,), (VALUE1,)),
-        ((VALUE1, VALUE3), (VALUE1, VALUE3)),
-        ((VALUE2, VALUE1), (VALUE2, VALUE1)),
-        ((VALUE2, VALUE3, 1, 2, VALUE1), (VALUE2, VALUE3, 1, 2, VALUE1)),
+        ([VALUE1], [VALUE1]),
+        ([VALUE1, VALUE3], [VALUE1, VALUE3]),
+        ([VALUE2, VALUE1], [VALUE2, VALUE1]),
+        ([VALUE2, VALUE3, 1, 2, VALUE1], [VALUE2, VALUE3, 1, 2, VALUE1]),
         # Duplicates are kept, but "normalized" via validation.
         (
-            (VALUE3, 1, VALUE3, "1", True, " 1", VALUE2),
-            (VALUE3, 1, VALUE3, 1, 1, 1, VALUE2),
+            [VALUE3, 1, VALUE3, "1", True, " 1", VALUE2],
+            [VALUE3, 1, VALUE3, 1, 1, 1, VALUE2],
         ),
         # Other sequences should work too.
-        ([VALUE1, VALUE3], (VALUE1, VALUE3)),
+        ((VALUE1, VALUE3), [VALUE1, VALUE3]),
     ],
 )
-def test_series_property(value, expected):
+def test_list_property(value, expected):
     style = Style()
-    style.series_prop = value
-    assert style.series_prop == expected
+    style.list_prop = value
+    assert style.list_prop == expected
 
 
 @pytest.mark.parametrize(
@@ -475,43 +475,81 @@ def test_series_property(value, expected):
         (
             VALUE2,
             TypeError,
-            r"Value for series property series_prop must be a non-string sequence\.",
+            r"Value for list property list_prop must be a non-string sequence\.",
         ),
         (
             5,
             TypeError,
-            r"Value for series property series_prop must be a non-string sequence\.",
+            r"Value for list property list_prop must be a non-string sequence\.",
         ),
         (
             # Fails because it's only a generator, not a comprehension:
             (i for i in [VALUE1, VALUE3]),
             TypeError,
-            r"Value for series property series_prop must be a non-string sequence.",
+            r"Value for list property list_prop must be a non-string sequence.",
         ),
         (
-            (VALUE3, VALUE1, "bogus"),
+            [VALUE3, VALUE1, "bogus"],
             ValueError,
-            r"Invalid value 'bogus' for property series_prop; Valid values are: "
+            r"Invalid value 'bogus' for property list_prop; Valid values are: "
             r"none, value1, value2, value3, <integer>",
         ),
         (
             (),
             ValueError,
             r"Series properties cannot be set to an empty sequence; "
-            r"to reset a property, use del `style.series_prop`\.",
+            r"to reset a property, use del `style.list_prop`\.",
         ),
         (
             [],
             ValueError,
             r"Series properties cannot be set to an empty sequence; "
-            r"to reset a property, use del `style.series_prop`\.",
+            r"to reset a property, use del `style.list_prop`\.",
         ),
     ],
 )
-def test_series_property_invalid(value, error, match):
+def test_list_property_invalid(value, error, match):
     style = Style()
     with pytest.raises(error, match=match):
-        style.series_prop = value
+        style.list_prop = value
+
+
+@pytest.mark.parametrize(
+    "attr",
+    [
+        "__set_item__",
+        "__del_item",
+        "insert",
+        "append",
+        "clear",
+        "reverse",
+        "extend",
+        "pop",
+        "remove",
+        "__iadd__",
+        "sort",
+    ],
+)
+def test_list_property_immutable(attr):
+    style = Style()
+    style.list_prop = [1, 2, 3, VALUE2]
+    with pytest.raises(AttributeError):
+        getattr(style.list_prop, attr)
+
+
+def test_list_property_list_like():
+    style = Style()
+    style.list_prop = [1, 2, 3, VALUE2]
+    prop = style.list_prop
+
+    assert prop == [1, 2, 3, VALUE2]
+    assert str(prop) == repr(prop) == "[1, 2, 3, 'value2']"
+    assert len(prop) == 4
+
+    count = 0
+    for _ in prop:
+        count += 1
+    assert count == 4
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
