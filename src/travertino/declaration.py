@@ -199,7 +199,7 @@ class list_property(validated_property):
                 item = self.choices.validate(item)
             except ValueError:
                 raise ValueError(
-                    f"Invalid value {item!r} for property {self.name}; "
+                    f"Invalid value {item!r} for property {self._name_if_set}; "
                     f"Valid values are: {self.choices}"
                 )
             result.append(item)

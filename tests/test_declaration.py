@@ -94,6 +94,10 @@ def test_invalid_style():
         # Define an invalid initial value on a validated property
         validated_property(choices=VALUE_CHOICES, initial="something")
 
+    with pytest.raises(ValueError):
+        # Same for list property
+        list_property(choices=VALUE_CHOICES, initial=["something"])
+
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
 def test_positional_argument(StyleClass):
