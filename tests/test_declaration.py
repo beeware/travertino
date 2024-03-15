@@ -521,8 +521,8 @@ def test_list_property_invalid(value, error, match):
 @pytest.mark.parametrize(
     "attr",
     [
-        "__set_item__",
-        "__del_item",
+        "__setitem__",
+        "__delitem__",
         "insert",
         "append",
         "clear",
