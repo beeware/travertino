@@ -224,8 +224,6 @@ class directional_property:
 
         :param name_format: The format from which to generate subproperties. "{}" will
             be replaced with "_top", etc.
-        :param choices: The available choices.
-        :param initial: The initial value for the property.
         """
         self.name_format = name_format
 
