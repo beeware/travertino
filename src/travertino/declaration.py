@@ -123,13 +123,7 @@ class validated_property:
                 f"to reset a property, use del `style.{self.name}`."
             )
 
-        try:
-            value = self.validate(value)
-        except ValueError:
-            raise ValueError(
-                f"Invalid value {value!r} for property {self.name}; "
-                f"Valid values are: {self.choices}"
-            )
+        value = self.validate(value)
 
         if value != getattr(obj, f"_{self.name}", None):
             setattr(obj, f"_{self.name}", value)
@@ -143,8 +137,18 @@ class validated_property:
         else:
             obj.apply(self.name, self.initial)
 
+    @property
+    def _name_if_set(self):
+        return getattr(self, "name", "")
+
     def validate(self, value):
-        return self.choices.validate(value)
+        try:
+            return self.choices.validate(value)
+        except ValueError:
+            raise ValueError(
+                f"Invalid value {value!r} for property {self._name_if_set}; "
+                f"Valid values are: {self.choices}"
+            )
 
     def is_set_on(self, obj):
         return hasattr(obj, f"_{self.name}")
@@ -154,22 +158,28 @@ class series_property(validated_property):
     def validate(self, value):
         if isinstance(value, str) or not isinstance(value, Sequence):
             raise TypeError(
-                f"Value for series property {self.name} must be a non-string sequence."
+                f"Value for series property {self._name_if_set} must be a non-string "
+                "sequence."
             )
 
         if not value:
             raise ValueError(
                 "Series properties cannot be set to an empty sequence; "
-                f"to reset a property, use del `style.{self.name}`."
+                f"to reset a property, use del `style.{self._name_if_set}`."
             )
 
-        # Remove duplicates and preserve order:
+        # This could be a comprehension, but then the error couldn't specify which value
+        # is at fault.
         result = []
-        seen = set()
         for item in value:
-            if (item := self.choices.validate(item)) not in seen:
-                seen.add(item)
-                result.append(item)
+            try:
+                item = self.choices.validate(item)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid value {item!r} for property {self.name}; "
+                    f"Valid values are: {self.choices}"
+                )
+            result.append(item)
 
         return tuple(result)
 
@@ -288,7 +298,7 @@ class BaseStyle:
             if name not in self._ALL_PROPERTIES:
                 raise NameError(f"Unknown style {name}")
 
-            setattr(self, name, value)
+            self[name] = value
 
     def copy(self, applicator=None):
         "Create a duplicate of this style declaration."
@@ -299,20 +309,20 @@ class BaseStyle:
 
     def __getitem__(self, name):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES:
+        if name in self._ALL_PROPERTIES:
             return getattr(self, name)
         raise KeyError(name)
 
     def __setitem__(self, name, value):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES:
+        if name in self._ALL_PROPERTIES:
             setattr(self, name, value)
         else:
             raise KeyError(name)
 
     def __delitem__(self, name):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES:
+        if name in self._ALL_PROPERTIES:
             delattr(self, name)
         else:
             raise KeyError(name)

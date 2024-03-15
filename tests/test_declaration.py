@@ -454,8 +454,11 @@ def test_directional_property(StyleClass):
         ((VALUE1, VALUE3), (VALUE1, VALUE3)),
         ((VALUE2, VALUE1), (VALUE2, VALUE1)),
         ((VALUE2, VALUE3, 1, 2, VALUE1), (VALUE2, VALUE3, 1, 2, VALUE1)),
-        # Duplicates are removed, even if provided in different forms; order is preserved.
-        ((VALUE3, 1, VALUE3, "1", True, " 1", VALUE2), (VALUE3, 1, VALUE2)),
+        # Duplicates are kept, but "normalized" via validation.
+        (
+            (VALUE3, 1, VALUE3, "1", True, " 1", VALUE2),
+            (VALUE3, 1, VALUE3, 1, 1, 1, VALUE2),
+        ),
         # Other sequences should work too.
         ([VALUE1, VALUE3], (VALUE1, VALUE3)),
     ],
@@ -467,20 +470,47 @@ def test_series_property(value, expected):
 
 
 @pytest.mark.parametrize(
-    "value, error",
+    "value, error, match",
     [
-        (VALUE2, TypeError),
-        (5, TypeError),
-        # Fails because it's only a generator, not a comprehension:
-        ((i for i in [VALUE1, VALUE3]), TypeError),
-        ((VALUE3, VALUE1, "bogus"), ValueError),
-        ((), ValueError),
-        ([], ValueError),
+        (
+            VALUE2,
+            TypeError,
+            r"Value for series property series_prop must be a non-string sequence\.",
+        ),
+        (
+            5,
+            TypeError,
+            r"Value for series property series_prop must be a non-string sequence\.",
+        ),
+        (
+            # Fails because it's only a generator, not a comprehension:
+            (i for i in [VALUE1, VALUE3]),
+            TypeError,
+            r"Value for series property series_prop must be a non-string sequence.",
+        ),
+        (
+            (VALUE3, VALUE1, "bogus"),
+            ValueError,
+            r"Invalid value 'bogus' for property series_prop; Valid values are: "
+            r"none, value1, value2, value3, <integer>",
+        ),
+        (
+            (),
+            ValueError,
+            r"Series properties cannot be set to an empty sequence; "
+            r"to reset a property, use del `style.series_prop`\.",
+        ),
+        (
+            [],
+            ValueError,
+            r"Series properties cannot be set to an empty sequence; "
+            r"to reset a property, use del `style.series_prop`\.",
+        ),
     ],
 )
-def test_series_property_invalid(value, error):
+def test_series_property_invalid(value, error, match):
     style = Style()
-    with pytest.raises(error):
+    with pytest.raises(error, match=match):
         style.series_prop = value
 
 
@@ -604,6 +634,12 @@ def test_dict(StyleClass):
     assert style["thing_bottom"] == 10
     del style["thing_bottom"]
     assert style["thing_bottom"] == 0
+
+    # Property aliases can be accessed as well.
+    style["thing"] = 5
+    assert style["thing"] == (5, 5, 5, 5)
+    del style["thing"]
+    assert style["thing"] == (0, 0, 0, 0)
 
     # Clearing a valid property isn't an error
     del style["thing_bottom"]
