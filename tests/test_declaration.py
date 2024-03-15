@@ -9,6 +9,7 @@ from tests.test_choices import mock_apply, prep_style_class
 from travertino.declaration import (
     BaseStyle,
     Choices,
+    ImmutableList,
     directional_property,
     list_property,
     validated_property,
@@ -518,27 +519,46 @@ def test_list_property_invalid(value, error, match):
         style.list_prop = value
 
 
-@pytest.mark.parametrize(
-    "attr",
-    [
-        "__setitem__",
-        "__delitem__",
-        "insert",
-        "append",
-        "clear",
-        "reverse",
-        "extend",
-        "pop",
-        "remove",
-        "__iadd__",
-        "sort",
-    ],
-)
-def test_list_property_immutable(attr):
+def test_list_property_immutable():
     style = Style()
     style.list_prop = [1, 2, 3, VALUE2]
+    prop = style.list_prop
+
+    with pytest.raises(TypeError, match=r"does not support item assignment"):
+        prop[0] = 5
+
+    with pytest.raises(TypeError, match=r"doesn't support item deletion"):
+        del prop[1]
+
     with pytest.raises(AttributeError):
-        getattr(style.list_prop, attr)
+        prop.insert[2, VALUE1]
+
+    with pytest.raises(AttributeError):
+        prop.append(VALUE3)
+
+    with pytest.raises(AttributeError):
+        prop.clear()
+
+    with pytest.raises(AttributeError):
+        prop.reverse()
+
+    with pytest.raises(AttributeError):
+        prop.pop()
+
+    with pytest.raises(AttributeError):
+        prop.remove(VALUE2)
+
+    with pytest.raises(AttributeError):
+        prop.extend([5, 6, 7])
+
+    with pytest.raises(TypeError, match=r"unsupported operand type\(s\)"):
+        prop += [4, 3, VALUE1]
+
+    with pytest.raises(TypeError, match=r"unsupported operand type\(s\)"):
+        prop += ImmutableList([4, 3, VALUE1])
+
+    with pytest.raises(AttributeError):
+        prop.sort()
 
 
 def test_list_property_list_like():
@@ -547,6 +567,7 @@ def test_list_property_list_like():
     prop = style.list_prop
 
     assert prop == [1, 2, 3, VALUE2]
+    assert prop == ImmutableList([1, 2, 3, VALUE2])
     assert str(prop) == repr(prop) == "[1, 2, 3, 'value2']"
     assert len(prop) == 4
 

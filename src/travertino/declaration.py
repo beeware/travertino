@@ -161,15 +161,15 @@ class validated_property:
             obj.apply(self.name, self.initial)
 
     @property
-    def _name_if_set(self):
-        return getattr(self, "name", "")
+    def _name_if_set(self, default=""):
+        return f" {self.name}" if hasattr(self, "name") else default
 
     def validate(self, value):
         try:
             return self.choices.validate(value)
         except ValueError:
             raise ValueError(
-                f"Invalid value {value!r} for property {self._name_if_set}; "
+                f"Invalid value {value!r} for property{self._name_if_set}; "
                 f"Valid values are: {self.choices}"
             )
 
@@ -181,14 +181,15 @@ class list_property(validated_property):
     def validate(self, value):
         if isinstance(value, str) or not isinstance(value, Sequence):
             raise TypeError(
-                f"Value for list property {self._name_if_set} must be a non-string "
+                f"Value for list property{self._name_if_set} must be a non-string "
                 "sequence."
             )
 
         if not value:
+            name = getattr(self, "name", "prop_name")
             raise ValueError(
                 "Series properties cannot be set to an empty sequence; "
-                f"to reset a property, use del `style.{self._name_if_set}`."
+                f"to reset a property, use del `style.{name}`."
             )
 
         # This could be a comprehension, but then the error couldn't specify which value
@@ -199,7 +200,7 @@ class list_property(validated_property):
                 item = self.choices.validate(item)
             except ValueError:
                 raise ValueError(
-                    f"Invalid value {item!r} for property {self._name_if_set}; "
+                    f"Invalid value {item!r} for property{self._name_if_set}; "
                     f"Valid values are: {self.choices}"
                 )
             result.append(item)
