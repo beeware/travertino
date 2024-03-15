@@ -456,6 +456,7 @@ def test_directional_property(StyleClass):
     "value, expected",
     [
         ([VALUE1], [VALUE1]),
+        (VALUE1, [VALUE1]),
         ([VALUE1, VALUE3], [VALUE1, VALUE3]),
         ([VALUE2, VALUE1], [VALUE2, VALUE1]),
         ([VALUE2, VALUE3, 1, 2, VALUE1], [VALUE2, VALUE3, 1, 2, VALUE1]),
@@ -478,20 +479,15 @@ def test_list_property(value, expected):
     "value, error, match",
     [
         (
-            VALUE2,
-            TypeError,
-            r"Value for list property list_prop must be a non-string sequence\.",
-        ),
-        (
             5,
             TypeError,
-            r"Value for list property list_prop must be a non-string sequence\.",
+            r"Value for list property list_prop must be a sequence\.",
         ),
         (
             # Fails because it's only a generator, not a comprehension:
             (i for i in [VALUE1, VALUE3]),
             TypeError,
-            r"Value for list property list_prop must be a non-string sequence.",
+            r"Value for list property list_prop must be a sequence.",
         ),
         (
             [VALUE3, VALUE1, "bogus"],

@@ -179,10 +179,11 @@ class validated_property:
 
 class list_property(validated_property):
     def validate(self, value):
-        if isinstance(value, str) or not isinstance(value, Sequence):
+        if isinstance(value, str):
+            value = [value]
+        elif not isinstance(value, Sequence):
             raise TypeError(
-                f"Value for list property{self._name_if_set} must be a non-string "
-                "sequence."
+                f"Value for list property{self._name_if_set} must be a sequence."
             )
 
         if not value:
