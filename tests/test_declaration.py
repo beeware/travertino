@@ -527,7 +527,7 @@ def test_list_property_immutable():
         del prop[1]
 
     with pytest.raises(AttributeError):
-        prop.insert[2, VALUE1]
+        prop.insert(2, VALUE1)
 
     with pytest.raises(AttributeError):
         prop.append(VALUE3)
@@ -562,6 +562,7 @@ def test_list_property_list_like():
     style.list_prop = [1, 2, 3, VALUE2]
     prop = style.list_prop
 
+    assert isinstance(prop, ImmutableList)
     assert prop == [1, 2, 3, VALUE2]
     assert prop == ImmutableList([1, 2, 3, VALUE2])
     assert str(prop) == repr(prop) == "[1, 2, 3, 'value2']"
