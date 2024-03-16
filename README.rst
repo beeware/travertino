@@ -82,10 +82,9 @@ the `Briefcase code contribution guide
 Although that document is for a different project, the details about setting up
 your development environment are the same.
 
-.. _BeeWare suite: http://beeware.org
+.. _BeeWare suite: https://beeware.org
 .. _Read The Docs: https://travertino.readthedocs.io
-.. _@pybeeware on Twitter: https://twitter.com/pybeeware
-.. _BeeWare Community Code of Conduct: http://beeware.org/community/behavior/
+.. _BeeWare Community Code of Conduct: https://beeware.org/community/behavior/
 .. _log them on Github: https://github.com/beeware/travertino/issues
 .. _fork the code: https://github.com/beeware/travertino
 .. _submit a pull request: https://github.com/beeware/travertino/pulls
