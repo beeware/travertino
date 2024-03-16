@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Mapping
+from typing import Mapping, Sequence
 from warnings import filterwarnings, warn
 
 from .colors import color
@@ -7,6 +7,29 @@ from .constants import BOTTOM, LEFT, RIGHT, TOP
 
 # Make sure deprecation warnings are shown by default
 filterwarnings("default", category=DeprecationWarning)
+
+
+class ImmutableList:
+    def __init__(self, iterable):
+        self._data = [*iterable]
+
+    def __getitem__(self, index):
+        return self._data[index]
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __eq__(self, other):
+        return self._data == other
+
+    def __str__(self):
+        return str(self._data)
+
+    def __repr__(self):
+        return repr(self._data)
 
 
 class Choices:
@@ -91,7 +114,7 @@ class validated_property:
             # If an initial value has been provided, it must be consistent with
             # the choices specified.
             if initial is not None:
-                self.initial = choices.validate(initial)
+                self.initial = self.validate(initial)
         except ValueError:
             # Unfortunately, __set_name__ hasn't been called yet, so we don't know the
             # property's name.
@@ -101,8 +124,8 @@ class validated_property:
 
     def __set_name__(self, owner, name):
         self.name = name
-        owner._PROPERTIES[owner].add(name)
-        owner._ALL_PROPERTIES[owner].add(name)
+        owner._BASE_PROPERTIES[owner].add(name)
+        owner._BASE_ALL_PROPERTIES[owner].add(name)
 
     def __get__(self, obj, objtype=None):
         if obj is None:
@@ -120,16 +143,10 @@ class validated_property:
         if value is None:
             raise ValueError(
                 "Python `None` cannot be used as a style value; "
-                f"to reset a property, use del `style.{self.name}`"
+                f"to reset a property, use del `style.{self.name}`."
             )
 
-        try:
-            value = self.choices.validate(value)
-        except ValueError:
-            raise ValueError(
-                f"Invalid value {value!r} for property {self.name}; "
-                f"Valid values are: {self.choices}"
-            )
+        value = self.validate(value)
 
         if value != getattr(obj, f"_{self.name}", None):
             setattr(obj, f"_{self.name}", value)
@@ -143,8 +160,53 @@ class validated_property:
         else:
             obj.apply(self.name, self.initial)
 
+    @property
+    def _name_if_set(self, default=""):
+        return f" {self.name}" if hasattr(self, "name") else default
+
+    def validate(self, value):
+        try:
+            return self.choices.validate(value)
+        except ValueError:
+            raise ValueError(
+                f"Invalid value {value!r} for property{self._name_if_set}; "
+                f"Valid values are: {self.choices}"
+            )
+
     def is_set_on(self, obj):
         return hasattr(obj, f"_{self.name}")
+
+
+class list_property(validated_property):
+    def validate(self, value):
+        if isinstance(value, str):
+            value = [value]
+        elif not isinstance(value, Sequence):
+            raise TypeError(
+                f"Value for list property{self._name_if_set} must be a sequence."
+            )
+
+        if not value:
+            name = getattr(self, "name", "prop_name")
+            raise ValueError(
+                "List properties cannot be set to an empty sequence; "
+                f"to reset a property, use del `style.{name}`."
+            )
+
+        # This could be a comprehension, but then the error couldn't specify which value
+        # is at fault.
+        result = []
+        for item in value:
+            try:
+                item = self.choices.validate(item)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid item value {item!r} for list property{self._name_if_set}; "
+                    f"Valid values are: {self.choices}"
+                )
+            result.append(item)
+
+        return ImmutableList(result)
 
 
 class directional_property:
@@ -157,21 +219,17 @@ class directional_property:
         4: [0, 1, 2, 3],
     }
 
-    def __init__(self, name_format, choices=None, initial=None):
+    def __init__(self, name_format):
         """Define a property attribute that proxies for top/right/bottom/left alternatives.
 
         :param name_format: The format from which to generate subproperties. "{}" will
             be replaced with "_top", etc.
-        :param choices: The available choices.
-        :param initial: The initial value for the property.
         """
         self.name_format = name_format
-        self.choices = choices
-        self.initial = initial
 
     def __set_name__(self, owner, name):
         self.name = name
-        owner._ALL_PROPERTIES[owner].add(self.name)
+        owner._BASE_ALL_PROPERTIES[owner].add(self.name)
 
     def format(self, direction):
         return self.name_format.format(f"_{direction}")
@@ -218,8 +276,13 @@ class BaseStyle:
     to still get the keyword-only behavior from the included __init__.
     """
 
-    _PROPERTIES = defaultdict(set)
-    _ALL_PROPERTIES = defaultdict(set)
+    _BASE_PROPERTIES = defaultdict(set)
+    _BASE_ALL_PROPERTIES = defaultdict(set)
+
+    def __init_subclass__(cls):
+        # Give the subclass a direct reference to its properties.
+        cls._PROPERTIES = cls._BASE_PROPERTIES[cls]
+        cls._ALL_PROPERTIES = cls._BASE_ALL_PROPERTIES[cls]
 
     # Fallback in case subclass isn't decorated as subclass (probably from using
     # previous API) or for pre-3.10, before kw_only argument existed.
@@ -248,79 +311,61 @@ class BaseStyle:
     ######################################################################
 
     def reapply(self):
-        for style in self._PROPERTIES[self.__class__]:
-            self.apply(style, getattr(self, style))
+        for name in self._PROPERTIES:
+            self.apply(name, self[name])
 
     def update(self, **styles):
         "Set multiple styles on the style definition."
         for name, value in styles.items():
             name = name.replace("-", "_")
-            if name not in self._ALL_PROPERTIES[self.__class__]:
+            if name not in self._ALL_PROPERTIES:
                 raise NameError(f"Unknown style {name}")
 
-            setattr(self, name, value)
+            self[name] = value
 
     def copy(self, applicator=None):
         "Create a duplicate of this style declaration."
         dup = self.__class__()
         dup._applicator = applicator
-        for style in self._PROPERTIES[self.__class__]:
-            try:
-                setattr(dup, style, getattr(self, f"_{style}"))
-            except AttributeError:
-                pass
+        dup.update(**self)
         return dup
 
     def __getitem__(self, name):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES[self.__class__]:
+        if name in self._ALL_PROPERTIES:
             return getattr(self, name)
         raise KeyError(name)
 
     def __setitem__(self, name, value):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES[self.__class__]:
+        if name in self._ALL_PROPERTIES:
             setattr(self, name, value)
         else:
             raise KeyError(name)
 
     def __delitem__(self, name):
         name = name.replace("-", "_")
-        if name in self._PROPERTIES[self.__class__]:
+        if name in self._ALL_PROPERTIES:
             delattr(self, name)
         else:
             raise KeyError(name)
 
     def keys(self):
-        return {
-            name
-            for name in self._PROPERTIES[self.__class__]
-            if hasattr(self, f"_{name}")
-        }
+        return {name for name in self._PROPERTIES if name in self}
 
     def items(self):
-        return [
-            (name, value)
-            for name in self._PROPERTIES[self.__class__]
-            if (value := getattr(self, f"_{name}", None)) is not None
-        ]
+        return [(name, self[name]) for name in self._PROPERTIES if name in self]
 
     def __len__(self):
-        return sum(
-            1 for name in self._PROPERTIES[self.__class__] if hasattr(self, f"_{name}")
-        )
+        return sum(1 for name in self._PROPERTIES if name in self)
 
     def __contains__(self, name):
-        return name in self._ALL_PROPERTIES[self.__class__] and (
+        return name in self._ALL_PROPERTIES and (
             getattr(self.__class__, name).is_set_on(self)
         )
 
     def __iter__(self):
-        yield from (
-            name
-            for name in self._PROPERTIES[self.__class__]
-            if hasattr(self, f"_{name}")
-        )
+        yield from (name for name in self._PROPERTIES if name in self)
 
     def __or__(self, other):
         if isinstance(other, BaseStyle):
@@ -347,14 +392,9 @@ class BaseStyle:
     # Get the rendered form of the style declaration
     ######################################################################
     def __str__(self):
-        non_default = []
-        for name in self._PROPERTIES[self.__class__]:
-            try:
-                non_default.append((name.replace("_", "-"), getattr(self, f"_{name}")))
-            except AttributeError:
-                pass
-
-        return "; ".join(f"{name}: {value}" for name, value in sorted(non_default))
+        return "; ".join(
+            f"{name.replace('_', '-')}: {value}" for name, value in sorted(self.items())
+        )
 
     ######################################################################
     # Backwards compatibility
@@ -385,35 +425,3 @@ class BaseStyle:
         prop = directional_property(name_format)
         setattr(cls, name, prop)
         prop.__set_name__(cls, name)
-
-    # Kept here for reference, for eventual implementation?
-
-    # def list_property(name, choices, initial=None):
-    #     "Define a property attribute that accepts a list of independently validated values."
-    #     initial = choices.validate(initial)
-
-    #     def getter(self):
-    #         return getattr(self, '_%s' % name, initial)
-
-    #     def setter(self, values):
-    #         try:
-    #             value = [choices.validate(v) for v in values.split(',')]
-    #         except ValueError:
-    #             raise ValueError("Invalid value in for list property '%s'; Valid values are: %s" % (
-    #                 name, choices
-    #             ))
-
-    #         if value != getattr(self, '_%s' % name, initial):
-    #             setattr(self, '_%s' % name, value)
-    #             self.apply(name, value)
-
-    #     def deleter(self):
-    #         try:
-    #             delattr(self, '_%s' % name)
-    #             self.apply(name, value)
-    #         except AttributeError:
-    #             # Attribute doesn't exist
-    #             pass
-
-    #     _PROPERTIES.add(name)
-    #     return property(getter, setter, deleter)

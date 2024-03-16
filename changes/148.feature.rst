@@ -1,0 +1,1 @@
+Added a ``list_property`` for storing multi-valued elements.
