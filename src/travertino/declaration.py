@@ -189,7 +189,7 @@ class list_property(validated_property):
         if not value:
             name = getattr(self, "name", "prop_name")
             raise ValueError(
-                "Series properties cannot be set to an empty sequence; "
+                "List properties cannot be set to an empty sequence; "
                 f"to reset a property, use del `style.{name}`."
             )
 
