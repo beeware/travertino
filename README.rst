@@ -1,29 +1,37 @@
-.. image:: https://beeware.org/static/images/defaultlogo.png
+.. |logo| image:: https://beeware.org/static/images/defaultlogo.png
     :width: 72px
     :target: https://beeware.org
+
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/travertino.svg
+    :target: https://pypi.python.org/pypi/travertino
+    :alt: Python Versions
+
+.. |version| image:: https://img.shields.io/pypi/v/travertino.svg
+    :target: https://pypi.python.org/pypi/travertino
+    :alt: Project version
+
+.. |maturity| image:: https://img.shields.io/pypi/status/travertino.svg
+    :target: https://pypi.python.org/pypi/travertino
+    :alt: Project status
+
+.. |license| image:: https://img.shields.io/pypi/l/travertino.svg
+    :target: https://github.com/beeware/travertino/blob/main/LICENSE
+    :alt: BSD License
+
+.. |ci| image:: https://github.com/beeware/travertino/workflows/CI/badge.svg?branch=main
+   :target: https://github.com/beeware/travertino/actions
+   :alt: Build Status
+
+.. |social| image:: https://img.shields.io/discord/836455665257021440?label=Discord%20Chat&logo=discord&style=plastic
+   :target: https://beeware.org/bee/chat/
+   :alt: Discord server
+
+|logo|
 
 Travertino
 ==========
 
-.. image:: https://img.shields.io/pypi/pyversions/travertino.svg
-    :target: https://pypi.python.org/pypi/travertino
-
-.. image:: https://img.shields.io/pypi/v/travertino.svg
-    :target: https://pypi.python.org/pypi/travertino
-
-.. image:: https://img.shields.io/pypi/status/travertino.svg
-    :target: https://pypi.python.org/pypi/travertino
-
-.. image:: https://img.shields.io/pypi/l/travertino.svg
-    :target: https://github.com/beeware/travertino/blob/main/LICENSE
-
-.. image:: https://github.com/beeware/travertino/workflows/CI/badge.svg?branch=main
-   :target: https://github.com/beeware/travertino/actions
-   :alt: Build Status
-
-.. image:: https://img.shields.io/discord/836455665257021440?label=Discord%20Chat&logo=discord&style=plastic
-   :target: https://beeware.org/bee/chat/
-   :alt: Discord server
+|pyversions| |version| |maturity| |license| |ci| |social|
 
 Travertino is a set of constants and utilities for describing user
 interfaces, including:
