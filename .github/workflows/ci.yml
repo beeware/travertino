@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_call:
+    inputs:
+      attest-package:
+        description: "Create GitHub provenance attestation for the package."
+        default: "false"
+        type: string
     outputs:
       artifact-name:
         description: "Name of the uploaded artifact; use for artifact retrieval."
@@ -20,12 +25,18 @@ jobs:
     uses: beeware/.github/.github/workflows/towncrier-run.yml@main
 
   package:
-    name: Python Package
+    name: Package Travertino
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     uses: beeware/.github/.github/workflows/python-package-create.yml@main
+    with:
+      attest: ${{ inputs.attest-package }}
 
   unit-tests:
     name: Python compatibility test
-    needs: [pre-commit, towncrier, package]
+    needs: [ pre-commit, towncrier, package ]
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental }}
     strategy:
@@ -54,12 +65,11 @@ jobs:
         name: ${{ needs.package.outputs.artifact-name }}
         path: dist
 
-    - name: Install dev dependencies
-      run: |
-        # We don't actually want to install travertino;
-        # we just want the dev extras so we have a known version of tox.
-        python -m pip install $(ls dist/travertino-*.whl)[dev]
+    - name: Install Tox
+      uses: beeware/.github/.github/actions/install-requirement@main
+      with:
+        requirements: tox
+        extra: dev
 
     - name: Test
-      run: |
-        tox -e py --installpkg dist/travertino-*.whl
+      run: tox -e py --installpkg dist/travertino-*.whl
