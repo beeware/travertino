@@ -210,7 +210,7 @@ class list_property(validated_property):
 
 
 class property_alias:
-    """A base class for list / composite properties. Not designed to be instnatiated."""
+    """A base class for list / composite properties. Not designed to be instantiated."""
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -322,9 +322,9 @@ class composite_property(property_alias):
             # Let error propagate if it raises.
             staged[name] = getattr(obj.__class__, name).validate(val)
 
-        # Next, look through the optional values. For each that isn't NORMAL, assign it
-        # to the first property that a) hasn't already had a value staged, and b)
-        # validates this value. (No need to handle NORMAL, since everything not
+        # Next, look through the optional values. For each that isn't resetting, assign
+        # it to the first property that a) hasn't already had a value staged, and b)
+        # validates this value. (No need to handle resets, since everything not
         # specified will be unset anyway.)
         optional_vals = value[: -len(self.required)]
         for val in optional_vals:
