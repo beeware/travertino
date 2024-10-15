@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from unittest.mock import call
 from warnings import catch_warnings, filterwarnings
 
 import pytest
 
 from tests.test_choices import mock_apply, prep_style_class
+from travertino.constants import NORMAL
 from travertino.declaration import (
     BaseStyle,
     Choices,
     ImmutableList,
+    composite_property,
     directional_property,
     list_property,
     validated_property,
@@ -18,8 +21,11 @@ from travertino.declaration import (
 VALUE1 = "value1"
 VALUE2 = "value2"
 VALUE3 = "value3"
+VALUE4 = "value4"
+VALUE5 = "value5"
 VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, None, integer=True)
 DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True)
+OTHER_CHOICES = Choices(VALUE4, VALUE5)
 
 
 @prep_style_class
@@ -45,7 +51,14 @@ class Style(BaseStyle):
     thing_left: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
 
     # Doesn't need to be tested in deprecated API:
-    list_prop: list[str] = list_property(choices=VALUE_CHOICES, initial=(VALUE2,))
+    list_prop: list[str] = list_property(choices=VALUE_CHOICES, initial=[VALUE2])
+    # Same for composite property.
+    optional_prop = validated_property(choices=OTHER_CHOICES)
+    composite_prop: list = composite_property(
+        optional=["implicit", "optional_prop"],
+        required=["explicit_const", "list_prop"],
+        reset_value=NORMAL,
+    )
 
 
 with catch_warnings():
@@ -572,6 +585,80 @@ def test_list_property_list_like():
     for _ in prop:
         count += 1
     assert count == 4
+
+    assert [*reversed(prop)] == [VALUE2, 3, 2, 1]
+
+    assert prop.index(3) == 2
+
+    assert prop.count(VALUE2) == 1
+
+    assert isinstance(prop, Sequence)
+
+
+def test_composite_property():
+    style = Style()
+
+    # Initial values
+    assert style.composite_prop == (VALUE1, [VALUE2])
+    assert "implicit" not in style
+    assert "optional_prop" not in style
+    assert style.explicit_const == VALUE1
+    assert style.list_prop == [VALUE2]
+
+    # Set all the properties.
+    style.composite_prop = (VALUE1, VALUE4, VALUE2, [VALUE1, VALUE3])
+
+    assert style.composite_prop == (VALUE1, VALUE4, VALUE2, [VALUE1, VALUE3])
+    assert style.implicit == VALUE1
+    assert style.optional_prop == VALUE4
+    assert style.explicit_const == VALUE2
+    assert style.list_prop == [VALUE1, VALUE3]
+
+    # Set just the required properties. Should unset optionals.
+    style.composite_prop = (VALUE3, [VALUE2])
+
+    assert style.composite_prop == (VALUE3, [VALUE2])
+    assert "implicit" not in style
+    assert "optional_prop" not in style
+    assert style.explicit_const == VALUE3
+    assert style.list_prop == [VALUE2]
+
+    # Set all properties, with optionals out of order.
+    style.composite_prop = (VALUE4, VALUE1, VALUE2, [VALUE1, VALUE3])
+
+    assert style.composite_prop == (VALUE1, VALUE4, VALUE2, [VALUE1, VALUE3])
+    assert style.implicit == VALUE1
+    assert style.optional_prop == VALUE4
+    assert style.explicit_const == VALUE2
+    assert style.list_prop == [VALUE1, VALUE3]
+
+    # Verify that a string passed to the list property is put into a list.
+    style.composite_prop = (VALUE2, VALUE1)
+
+    assert style.composite_prop == (VALUE2, [VALUE1])
+    assert style.list_prop == [VALUE1]
+
+
+@pytest.mark.parametrize(
+    "values, error",
+    [
+        # Too few values
+        ([], TypeError),
+        ([VALUE3], TypeError),
+        # Too many values
+        ([VALUE4, VALUE1, VALUE1, VALUE2, [VALUE1]], TypeError),
+        # Value not valid for any optional property
+        (["bogus", VALUE2, [VALUE3]], ValueError),
+        # Repeated value (VALUE4) that's only valid for one optional property
+        ([VALUE4, VALUE4, VALUE2, [VALUE3]], ValueError),
+        # Invalid property for a required property
+        ([VALUE4, [VALUE3]], ValueError),
+    ],
+)
+def test_composite_property_invalid(values, error):
+    style = Style()
+    with pytest.raises(error):
+        style.composite_prop = values
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
