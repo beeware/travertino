@@ -632,6 +632,22 @@ def test_composite_property():
     assert style.explicit_const == VALUE2
     assert style.list_prop == [VALUE1, VALUE3]
 
+    # Optionals can be reset with reset value (NORMAL).
+    style.composite_prop = (VALUE2, NORMAL, VALUE2, [VALUE1])
+    assert style.composite_prop == (VALUE2, VALUE2, [VALUE1])
+    assert style.implicit == VALUE2
+    assert "optional_prop" not in style
+    assert style.explicit_const == VALUE2
+    assert style.list_prop == [VALUE1]
+
+    # Reset value can be in any order.
+    style.composite_prop = (VALUE4, NORMAL, VALUE2, [VALUE1])
+    assert style.composite_prop == (VALUE4, VALUE2, [VALUE1])
+    assert "implicit" not in style
+    assert style.optional_prop == VALUE4
+    assert style.explicit_const == VALUE2
+    assert style.list_prop == [VALUE1]
+
     # Verify that a string passed to the list property is put into a list.
     style.composite_prop = (VALUE2, VALUE1)
 
