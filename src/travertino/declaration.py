@@ -1,3 +1,4 @@
+from abc import ABC, abstractproperty
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from warnings import filterwarnings, warn
@@ -209,8 +210,8 @@ class list_property(validated_property):
         return ImmutableList(result)
 
 
-class property_alias:
-    """A base class for list / composite properties. Not designed to be instantiated."""
+class property_alias(ABC):
+    """A base class for list / composite properties."""
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -222,6 +223,12 @@ class property_alias:
 
     def is_set_on(self, obj):
         return any(hasattr(obj, name) for name in self.properties)
+
+    @abstractproperty
+    def __get__(self, obj, objtype=None): ...
+
+    @abstractproperty
+    def __set__(self, obj, value): ...
 
 
 class directional_property(property_alias):
