@@ -38,12 +38,15 @@ jobs:
     name: Python compatibility test
     needs: [ pre-commit, towncrier, package ]
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental || false }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
         include:
+          # Builds must pass by default
+          - experimental: false
+
           # Development Python can fail without failing the entire job
           - python-version: "3.14"
             experimental: true
