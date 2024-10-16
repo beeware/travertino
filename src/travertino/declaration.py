@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from warnings import filterwarnings, warn
 
 from .colors import color
