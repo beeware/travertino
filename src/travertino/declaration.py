@@ -270,11 +270,8 @@ class directional_property(property_alias):
             )
 
 
-NOT_PROVIDED = object()
-
-
 class composite_property(property_alias):
-    def __init__(self, optional, required, reset_value=NOT_PROVIDED):
+    def __init__(self, optional, required, parse_str=str.split):
         """Define a property attribute that proxies for an arbitrary set of properties.
 
         :param optional: The names of aliased properties that are optional in
@@ -283,14 +280,14 @@ class composite_property(property_alias):
            property, in which case it's assigned to the first one available.
         :param required: Which properties, if any, are required when setting this
             property. In assignment, these must be specified last and in order.
-        :param reset_value: Value to provide to reset optional values to their defaults.
+        :param parse_str: A callable with which to parse a string into valid input.
         """
         self.optional = optional
         self.required = required
         self.properties = self.optional + self.required
-        self.reset_value = reset_value
         self.min_num = len(self.required)
         self.max_num = len(self.required) + len(self.optional)
+        self.parse_str = parse_str
 
     def __get__(self, obj, objtype=None):
         if obj is None:
@@ -306,6 +303,9 @@ class composite_property(property_alias):
             # supplied.
             return
 
+        if isinstance(value, str):
+            value = self.parse_str(value)
+
         if not self.min_num <= len(value) <= self.max_num:
             raise TypeError(
                 f"Composite property {self.name} must be set with at least "
@@ -317,39 +317,49 @@ class composite_property(property_alias):
 
         # Handle the required values first. They have to be there, and in order, or the
         # whole assignment is invalid.
-        required_vals = value[-len(self.required) :]
-        for name, val in zip(self.required, required_vals):
+        required_values = value[-len(self.required) :]
+        for name, value in zip(self.required, required_values):
             # Let error propagate if it raises.
-            staged[name] = getattr(obj.__class__, name).validate(val)
+            staged[name] = getattr(obj.__class__, name).validate(value)
 
-        # Next, look through the optional values. For each that isn't resetting, assign
-        # it to the first property that a) hasn't already had a value staged, and b)
-        # validates this value. (No need to handle resets, since everything not
-        # specified will be unset anyway.)
-        optional_vals = value[: -len(self.required)]
-        for val in optional_vals:
-            if val == self.reset_value:
-                continue
+        # Next, look through the optional values. First, for each value, determine which
+        # properties can accept it. Then assign the values in order of specificity.
+        # (Values of equal specificity are simply assigned to properties in order.)
+        optional_values = value[: -len(self.required)]
 
+        values_and_valid_props = []
+        for value in optional_values:
+            valid_props = []
             for name in self.optional:
-                if name in staged:
-                    continue
-
                 try:
-                    staged[name] = getattr(obj.__class__, name).validate(val)
-                    break
+                    getattr(obj.__class__, name).validate(value)
+                    valid_props.append(name)
                 except ValueError:
                     pass
-            # no break
-            else:
-                # We got to the end and nothing (that wasn't already set) validated this
-                # item.
+            if not valid_props:
                 raise ValueError(
-                    f"Invalid assignment for composite property {self.name}: {value}"
+                    f"Value {value} not valid for any optional properties of composite "
+                    f"property {self.name}"
                 )
 
-        # Update to staged properties, and delete unstaged ones.
-        for name in self.optional:
+            values_and_valid_props.append((value, valid_props))
+
+        for value, valid_props in sorted(
+            values_and_valid_props, key=lambda x: len(x[1])
+        ):
+            for name in valid_props:
+                if name not in staged:
+                    staged[name] = value
+                    break
+            else:
+                # No valid property is still free.
+                raise ValueError(
+                    f"Value {value} not valid for any optional properties of composite "
+                    f"property {self.name} that are not already being assigned."
+                )
+
+        # Apply staged properties, and clear any that haven't been staged.
+        for prop in self.optional:
             if name not in staged:
                 del obj[name]
         obj |= staged
