@@ -326,8 +326,8 @@ class BaseStyle:
     def copy(self, applicator=None):
         "Create a duplicate of this style declaration."
         dup = self.__class__()
-        dup._applicator = applicator
         dup.update(**self)
+        dup._applicator = applicator
         return dup
 
     def __getitem__(self, name):
