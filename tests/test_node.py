@@ -1,13 +1,13 @@
 import pytest
 
-from tests.utils import apply_dataclass, mock_attr
+from tests.utils import mock_attr, prep_style_class
 from travertino.declaration import BaseStyle, Choices, validated_property
 from travertino.layout import BaseBox, Viewport
 from travertino.node import Node
 from travertino.size import BaseIntrinsicSize
 
 
-@apply_dataclass
+@prep_style_class
 @mock_attr("reapply")
 class Style(BaseStyle):
     int_prop: int = validated_property(Choices(integer=True))
@@ -24,7 +24,7 @@ class Style(BaseStyle):
         root.layout.content_height = viewport.height * 2
 
 
-@apply_dataclass
+@prep_style_class
 class BrokenStyle(BaseStyle):
     def reapply(self):
         raise AttributeError

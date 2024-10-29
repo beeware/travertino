@@ -4,13 +4,13 @@ from warnings import catch_warnings, filterwarnings
 
 import pytest
 
-from tests.utils import apply_dataclass, mock_attr
+from tests.utils import mock_attr, prep_style_class
 from travertino.colors import NAMED_COLOR, rgb
 from travertino.constants import GOLDENROD, NONE, REBECCAPURPLE, TOP
 from travertino.declaration import BaseStyle, Choices, validated_property
 
 
-@apply_dataclass
+@prep_style_class
 class Style(BaseStyle):
     none: str = validated_property(choices=Choices(NONE, REBECCAPURPLE), initial=NONE)
     allow_string: str = validated_property(

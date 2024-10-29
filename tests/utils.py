@@ -8,7 +8,7 @@ else:
     _DATACLASS_KWARGS = {"kw_only": True}
 
 
-def apply_dataclass(cls):
+def prep_style_class(cls):
     """Decorator to apply dataclass and mock apply."""
     return mock_attr("apply")(dataclass(**_DATACLASS_KWARGS)(cls))
 

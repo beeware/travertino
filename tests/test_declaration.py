@@ -5,7 +5,7 @@ from warnings import catch_warnings, filterwarnings
 
 import pytest
 
-from tests.utils import apply_dataclass, mock_attr
+from tests.utils import mock_attr, prep_style_class
 from travertino.declaration import (
     BaseStyle,
     Choices,
@@ -22,7 +22,7 @@ VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, None, integer=True)
 DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True)
 
 
-@apply_dataclass
+@prep_style_class
 class Style(BaseStyle):
     # Some properties with explicit initial values
     explicit_const: str | int = validated_property(
