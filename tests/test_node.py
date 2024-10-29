@@ -1,12 +1,17 @@
 import pytest
 
-from travertino.declaration import BaseStyle
+from tests.utils import apply_dataclass, mock_attr
+from travertino.declaration import BaseStyle, Choices, validated_property
 from travertino.layout import BaseBox, Viewport
 from travertino.node import Node
 from travertino.size import BaseIntrinsicSize
 
 
+@apply_dataclass
+@mock_attr("reapply")
 class Style(BaseStyle):
+    int_prop: int = validated_property(Choices(integer=True))
+
     class IntrinsicSize(BaseIntrinsicSize):
         pass
 
@@ -219,3 +224,48 @@ def test_clear():
         assert child.root == child
 
     assert node.children == []
+
+
+def test_style_and_applicator_assignment():
+    style_1 = Style(int_prop=5)
+    node = Node(style=style_1)
+
+    # Style copies on assignment.
+    assert isinstance(node.style, Style)
+    assert node.style == style_1
+    assert node.style is not style_1
+
+    # Since no applicator has been assigned, style wasn't applied.
+    node.style.reapply.assert_not_called()
+
+    applicator = object()
+    node.applicator = applicator
+
+    # Applicator assignment does *not* copy.
+    assert node.applicator is applicator
+    # Should have also assigned to the style.
+    assert node.style._applicator is applicator
+    # Reapply should be called, now that we have both style and applicator.
+    node.style.reapply.assert_called_once()
+
+    style_2 = Style(int_prop=6)
+    node.style = style_2
+
+    assert node.style == style_2
+    # Since applicator is already assigned, assigning style triggers reapply.
+    node.style.reapply.assert_called_once()
+
+    node.style.reapply.reset_mock()
+
+    # Assigning None to applicator does not trigger reapply.
+    node.applicator = None
+    assert node.applicator is None
+    assert node.style._applicator is None
+    node.style.reapply.assert_not_called()
+
+    node.style = None
+    assert node.style is None
+
+    # There's no mock to test, but the fact that this doesn't raise an exception means
+    # it didn't try to call reapply.
+    node.applicator = object()

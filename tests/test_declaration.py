@@ -5,7 +5,7 @@ from warnings import catch_warnings, filterwarnings
 
 import pytest
 
-from tests.test_choices import mock_apply, prep_style_class
+from tests.utils import apply_dataclass, mock_attr
 from travertino.declaration import (
     BaseStyle,
     Choices,
@@ -22,7 +22,7 @@ VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, None, integer=True)
 DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True)
 
 
-@prep_style_class
+@apply_dataclass
 class Style(BaseStyle):
     # Some properties with explicit initial values
     explicit_const: str | int = validated_property(
@@ -51,7 +51,7 @@ class Style(BaseStyle):
 with catch_warnings():
     filterwarnings("ignore", category=DeprecationWarning)
 
-    @mock_apply
+    @mock_attr("apply")
     class DeprecatedStyle(BaseStyle):
         pass
 

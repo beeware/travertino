@@ -327,7 +327,16 @@ class BaseStyle:
         "Create a duplicate of this style declaration."
         dup = self.__class__()
         dup.update(**self)
-        dup._applicator = applicator
+
+        if applicator is not None:
+            warn(
+                "Providing an applicator to BaseStyle.copy() is deprecated. Set "
+                "applicator afterward on the returned copy.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            dup._applicator = applicator
+
         return dup
 
     def __getitem__(self, name):

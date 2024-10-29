@@ -1,40 +1,16 @@
 from __future__ import annotations
 
-import sys
-from dataclasses import dataclass
-from unittest.mock import Mock
 from warnings import catch_warnings, filterwarnings
 
 import pytest
 
+from tests.utils import apply_dataclass, mock_attr
 from travertino.colors import NAMED_COLOR, rgb
 from travertino.constants import GOLDENROD, NONE, REBECCAPURPLE, TOP
 from travertino.declaration import BaseStyle, Choices, validated_property
 
-if sys.version_info < (3, 10):
-    _DATACLASS_KWARGS = {"init": False}
-else:
-    _DATACLASS_KWARGS = {"kw_only": True}
 
-
-def prep_style_class(cls):
-    """Decorator to apply dataclass and mock a style class's apply method."""
-    return mock_apply(dataclass(**_DATACLASS_KWARGS)(cls))
-
-
-def mock_apply(cls):
-    """Only mock apply, without applying dataclass."""
-    orig_init = cls.__init__
-
-    def __init__(self, *args, **kwargs):
-        self.apply = Mock()
-        orig_init(self, *args, **kwargs)
-
-    cls.__init__ = __init__
-    return cls
-
-
-@prep_style_class
+@apply_dataclass
 class Style(BaseStyle):
     none: str = validated_property(choices=Choices(NONE, REBECCAPURPLE), initial=NONE)
     allow_string: str = validated_property(
@@ -56,7 +32,7 @@ class Style(BaseStyle):
 with catch_warnings():
     filterwarnings("ignore", category=DeprecationWarning)
 
-    @mock_apply
+    @mock_attr("apply")
     class DeprecatedStyle(BaseStyle):
         pass
 
