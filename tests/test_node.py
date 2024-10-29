@@ -294,3 +294,13 @@ def test_style_and_applicator_assignment_deprecated():
 
     with pytest.warns(DeprecationWarning):
         Node(style=style, applicator=applicator)
+
+    with pytest.warns(DeprecationWarning):
+        node = Node(style=style)
+        node.applicator = applicator
+
+    with pytest.warns(DeprecationWarning):
+        node = Node(style=style)
+        node.style = None
+        node.applicator = applicator
+        node.style = style
