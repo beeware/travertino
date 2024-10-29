@@ -9,9 +9,6 @@ class Node:
         self.applicator = applicator
         self.style = style
 
-        self.intrinsic = self.style.IntrinsicSize()
-        self.layout = self.style.Box(self)
-
         self._parent = None
         self._root = None
         if children is None:
@@ -38,6 +35,8 @@ class Node:
             return
 
         self._style = style.copy()
+        self.intrinsic = self.style.IntrinsicSize()
+        self.layout = self.style.Box(self)
 
         if self.applicator:
             self.style._applicator = self.applicator
