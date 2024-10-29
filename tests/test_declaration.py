@@ -121,6 +121,13 @@ def test_create_and_copy(StyleClass):
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_deprecated_copy(StyleClass):
+    style = StyleClass(explicit_const=VALUE2)
+    with pytest.warns(DeprecationWarning):
+        style.copy(applicator=object())
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
 def test_reapply(StyleClass):
     style = StyleClass(explicit_const=VALUE2, implicit=VALUE3)
 

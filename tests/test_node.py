@@ -24,6 +24,23 @@ class Style(BaseStyle):
         root.layout.content_height = viewport.height * 2
 
 
+@apply_dataclass
+class BrokenStyle(BaseStyle):
+    def reapply(self):
+        raise AttributeError
+
+    class IntrinsicSize(BaseIntrinsicSize):
+        pass
+
+    class Box(BaseBox):
+        pass
+
+    def layout(self, root, viewport):
+        # A simple layout scheme that allocates twice the viewport size.
+        root.layout.content_width = viewport.width * 2
+        root.layout.content_height = viewport.height * 2
+
+
 def test_create_leaf():
     """A leaf can be created"""
     style = Style()
@@ -269,3 +286,11 @@ def test_style_and_applicator_assignment():
     # There's no mock to test, but the fact that this doesn't raise an exception means
     # it didn't try to call reapply.
     node.applicator = object()
+
+
+def test_style_and_applicator_assignment_deprecated():
+    style = BrokenStyle()
+    applicator = object()
+
+    with pytest.warns(DeprecationWarning):
+        Node(style=style, applicator=applicator)
