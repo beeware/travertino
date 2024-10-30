@@ -1,13 +1,7 @@
-from warnings import filterwarnings, warn
-
-# Make sure deprecation warnings are shown by default
-filterwarnings("default", category=DeprecationWarning)
-
-
 class Node:
-    def __init__(self, style, applicator=None, children=None):
-        self.applicator = applicator
+    def __init__(self, style=None, applicator=None, children=None):
         self.style = style
+        self.applicator = applicator
 
         self._parent = None
         self._root = None
@@ -25,8 +19,9 @@ class Node:
         Assigning a style triggers an application of that style if an applicator has
         already been assigned.
         """
-
-        return getattr(self, "_style", None)
+        # Has to have a fallback, because it's accessed before its assignment in the
+        # setter for applicator
+        return self._style
 
     @style.setter
     def style(self, style):
@@ -41,47 +36,23 @@ class Node:
         if self.applicator:
             self.style._applicator = self.applicator
 
-            try:
-                self.style.reapply()
-            # Backwards compatibility for Toga
-            except AttributeError:
-                warn(
-                    "Failed to apply style, when new style assigned and applicator "
-                    "already present. Node should be sufficiently initialized to "
-                    "apply style before it has both a style and an applicator.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-
     @property
     def applicator(self):
         """This node's applicator, which handles applying the style.
 
-        Assigning an applicator triggers an application of that style if a style has
-        already been assigned.
+        Assigning an applicator triggers an application of the node's style if a style
+        has already been assigned.
         """
         return getattr(self, "_applicator", None)
 
     @applicator.setter
     def applicator(self, applicator):
         self._applicator = applicator
+        if applicator:
+            applicator.node = self
 
         if self.style is not None:
             self.style._applicator = applicator
-
-            if applicator:
-
-                try:
-                    self.style.reapply()
-                # Backwards compatibility for Toga
-                except AttributeError:
-                    warn(
-                        "Failed to apply style, when new applicator assigned and style "
-                        "already present. Node should be sufficiently initialized to "
-                        "apply style before it has both a style and an applicator.",
-                        DeprecationWarning,
-                        stacklevel=2,
-                    )
 
     @property
     def root(self):

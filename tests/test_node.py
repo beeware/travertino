@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import pytest
 
 from tests.utils import mock_attr, prep_style_class
@@ -27,7 +29,7 @@ class Style(BaseStyle):
 @prep_style_class
 class BrokenStyle(BaseStyle):
     def reapply(self):
-        raise AttributeError
+        raise Exception
 
     class IntrinsicSize(BaseIntrinsicSize):
         pass
@@ -243,62 +245,144 @@ def test_clear():
     assert node.children == []
 
 
-def test_style_and_applicator_assignment():
-    style_1 = Style(int_prop=5)
-    node = Node(style=style_1)
+def test_create_with_only_style():
+    style = Style(int_prop=5)
+    node = Node(style=style)
 
     # Style copies on assignment.
     assert isinstance(node.style, Style)
-    assert node.style == style_1
-    assert node.style is not style_1
+    assert node.style == style
+    assert node.style is not style
 
     # Since no applicator has been assigned, style wasn't applied.
     node.style.reapply.assert_not_called()
 
-    applicator = object()
+
+def test_assign_only_style():
+    style = Style(int_prop=5)
+    node = Node()
+    node.style = style
+
+    # Style copies on assignment.
+    assert isinstance(node.style, Style)
+    assert node.style == style
+    assert node.style is not style
+
+    # Since no applicator has been assigned, style wasn't applied.
+    node.style.reapply.assert_not_called()
+
+
+def test_create_with_only_applicator():
+    applicator = Mock()
+
+    # No reapply should be attempted. If it were, it would raise an AttributeError as
+    # None has no reapply() method.
+    node = Node(applicator=applicator)
+
+    # Applicator assignment does *not* copy.
+    assert node.applicator is applicator
+
+    assert applicator.node is node
+
+
+def test_assign_only_applicator():
+    applicator = Mock()
+    node = Node()
+
+    # No reapply should be attempted. If it were, it would raise an AttributeError as
+    # None has no reapply() method.
     node.applicator = applicator
 
     # Applicator assignment does *not* copy.
     assert node.applicator is applicator
-    # Should have also assigned to the style.
+
+
+def test_create_with_style_and_applicator():
+    style = Style(int_prop=5)
+    applicator = Mock()
+    node = Node(style=style, applicator=applicator)
+
+    # With both style and applicator present, style should be applied.
+    node.style.reapply.assert_called_once()
+    # Should have also assigned the applicator the style.
     assert node.style._applicator is applicator
-    # Reapply should be called, now that we have both style and applicator.
+
+
+def test_style_then_applicator():
+    style = Style(int_prop=5)
+    applicator = Mock()
+    node = Node(style=style)
+    node.applicator = applicator
+
+    # With both style and applicator present, style should be applied.
     node.style.reapply.assert_called_once()
+    # Should have also assigned the applicator the style.
+    assert node.style._applicator is applicator
 
-    style_2 = Style(int_prop=6)
-    node.style = style_2
 
-    assert node.style == style_2
-    # Since applicator is already assigned, assigning style triggers reapply.
+def test_applicator_then_style():
+    style = Style(int_prop=5)
+    applicator = Mock()
+    node = Node(applicator=applicator)
+    node.style = style
+
+    # With both style and applicator present, style should be applied.
     node.style.reapply.assert_called_once()
+    # Should have also assigned the applicator the style.
+    assert node.style._applicator is applicator
 
-    node.style.reapply.reset_mock()
 
-    # Assigning None to applicator does not trigger reapply.
+@pytest.mark.parametrize(
+    "node",
+    [
+        Node(),
+        Node(style=Style()),
+        Node(applicator=Mock()),
+        Node(style=Style(), applicator=Mock()),
+    ],
+)
+def test_assign_applicator_none(node):
+    if node.style is not None:
+        node.style.reapply.reset_mock()
+
     node.applicator = None
     assert node.applicator is None
-    assert node.style._applicator is None
-    node.style.reapply.assert_not_called()
 
+    if node.style is not None:
+        # Should be updated on style as well
+        assert node.style._applicator is None
+        # Assigning None to applicator does not trigger reapply.
+        node.style.reapply.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        Node(),
+        Node(style=Style()),
+        Node(applicator=Mock()),
+        Node(style=Style(), applicator=Mock()),
+    ],
+)
+def test_assign_style_none(node):
     node.style = None
     assert node.style is None
 
-    # There's no mock to test, but the fact that this doesn't raise an exception means
-    # it didn't try to call reapply.
-    node.applicator = object()
+    # No reapply should be attempted. If it were, it would raise an AttributeError as
+    # None has no reapply() method.
 
 
-def test_style_and_applicator_assignment_deprecated():
+def test_apply_before_node_is_ready():
     style = BrokenStyle()
-    applicator = object()
+    applicator = Mock()
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(RuntimeWarning):
         Node(style=style, applicator=applicator)
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(RuntimeWarning):
         node = Node(style=style)
         node.applicator = applicator
 
-    with pytest.warns(DeprecationWarning):
-        node = Node(style=None, applicator=applicator)
+    with pytest.warns(RuntimeWarning):
+        node = Node(applicator=applicator)
         node.style = style
