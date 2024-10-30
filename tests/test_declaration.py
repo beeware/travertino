@@ -90,6 +90,12 @@ class Sibling(BaseStyle):
     pass
 
 
+@prep_style_class
+@mock_attr("reapply")
+class MockedReapplyStyle(BaseStyle):
+    pass
+
+
 def test_invalid_style():
     with pytest.raises(ValueError):
         # Define an invalid initial value on a validated property
@@ -120,11 +126,13 @@ def test_create_and_copy(StyleClass):
     assert dup.implicit == VALUE3
 
 
-@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
-def test_deprecated_copy(StyleClass):
-    style = StyleClass(explicit_const=VALUE2)
+def test_deprecated_copy():
+    style = MockedReapplyStyle()
+
     with pytest.warns(DeprecationWarning):
-        style.copy(applicator=object())
+        style_copy = style.copy(applicator=object())
+
+    style_copy.reapply.assert_called_once()
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
