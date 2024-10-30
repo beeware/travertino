@@ -19,8 +19,6 @@ class Node:
         Assigning a style triggers an application of that style if an applicator has
         already been assigned.
         """
-        # Has to have a fallback, because it's accessed before its assignment in the
-        # setter for applicator
         return self._style
 
     @style.setter
@@ -43,6 +41,8 @@ class Node:
         Assigning an applicator triggers an application of the node's style if a style
         has already been assigned.
         """
+        # Has to have a fallback, because it's accessed before its assignment in the
+        # setter for style
         return getattr(self, "_applicator", None)
 
     @applicator.setter
