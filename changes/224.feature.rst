@@ -1,0 +1,1 @@
+It is now possible to create a node without supplying an initial style.
