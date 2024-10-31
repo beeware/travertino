@@ -367,4 +367,7 @@ def test_apply_before_node_is_ready():
         node.applicator = applicator
 
     with pytest.warns(RuntimeWarning):
+        node.style = BrokenStyle()
+
+    with pytest.warns(RuntimeWarning):
         Node(style=style, applicator=applicator)
