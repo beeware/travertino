@@ -38,8 +38,7 @@ class Node:
     def applicator(self):
         """This node's applicator, which handles applying the style.
 
-        Assigning an applicator triggers an application of the node's style if a style
-        has already been assigned.
+        Assigning an applicator triggers an application of the node's style.
         """
         return self._applicator
 
