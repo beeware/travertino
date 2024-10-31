@@ -1,5 +1,9 @@
 class Node:
-    def __init__(self, style=None, applicator=None, children=None):
+    def __init__(self, style, applicator=None, children=None):
+        # Explicitly set the internal attribute first, since the setter for style will
+        # access the applicator property.
+        self._applicator = None
+
         self.style = style
         self.applicator = applicator
 
@@ -23,10 +27,6 @@ class Node:
 
     @style.setter
     def style(self, style):
-        if style is None:
-            self._style = None
-            return
-
         self._style = style.copy()
         self.intrinsic = self.style.IntrinsicSize()
         self.layout = self.style.Box(self)
@@ -41,18 +41,15 @@ class Node:
         Assigning an applicator triggers an application of the node's style if a style
         has already been assigned.
         """
-        # Has to have a fallback, because it's accessed before its assignment in the
-        # setter for style
-        return getattr(self, "_applicator", None)
+        return self._applicator
 
     @applicator.setter
     def applicator(self, applicator):
         self._applicator = applicator
+        self.style._applicator = applicator
+
         if applicator:
             applicator.node = self
-
-        if self.style is not None:
-            self.style._applicator = applicator
 
     @property
     def root(self):
