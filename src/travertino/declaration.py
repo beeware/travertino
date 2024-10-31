@@ -305,10 +305,10 @@ class BaseStyle:
             # implementation is available.
             except Exception:
                 warn(
-                    "Failed to apply style, when new applicator assigned and style "
-                    "already present. Node should be sufficiently initialized to "
-                    "apply style before it has both a style and an applicator. This"
-                    "will be an exception in a future version.",
+                    "Failed to apply style when assigning applicator, or when "
+                    "assigning a new style once applicator is present. Node should be "
+                    "sufficiently initialized to apply its style before it is assigned "
+                    "an applicator. This will be an exception in a future version.",
                     RuntimeWarning,
                     stacklevel=2,
                 )
