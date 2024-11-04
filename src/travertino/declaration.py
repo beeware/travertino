@@ -297,6 +297,22 @@ class BaseStyle:
     def _applicator(self, value):
         self._assigned_applicator = value
 
+        if value is not None:
+            try:
+                self.reapply()
+            # This is backwards compatibility for Toga, which (at least as of
+            # 0.4.8), assigns style and applicator before the widget's
+            # implementation is available.
+            except Exception:
+                warn(
+                    "Failed to apply style when assigning applicator, or when "
+                    "assigning a new style once applicator is present. Node should be "
+                    "sufficiently initialized to apply its style before it is assigned "
+                    "an applicator. This will be an exception in a future version.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+
     ######################################################################
     # Interface that style declarations must define
     ######################################################################
@@ -326,8 +342,17 @@ class BaseStyle:
     def copy(self, applicator=None):
         "Create a duplicate of this style declaration."
         dup = self.__class__()
-        dup._applicator = applicator
         dup.update(**self)
+
+        if applicator is not None:
+            warn(
+                "Providing an applicator to BaseStyle.copy() is deprecated. Set "
+                "applicator afterward on the returned copy.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            dup._applicator = applicator
+
         return dup
 
     def __getitem__(self, name):
