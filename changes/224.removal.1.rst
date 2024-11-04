@@ -1,1 +1,1 @@
-Supplying an applicator to BaseStyle.copy() has been deprecated. If you need to manually assign an applicator to a style, do it separately, after the copy. (In normal usage, though, assigning an applicator to a style is handled automatically when styles and/or applicators are assigned to nodes.)
+Supplying an applicator to BaseStyle.copy() has been deprecated. If you need to manually assign an applicator to a style, do it separately, after the copy.
