@@ -29,7 +29,7 @@ class Style(BaseStyle):
 @prep_style_class
 class BrokenStyle(BaseStyle):
     def reapply(self):
-        raise Exception
+        raise AttributeError("Missing attribute, node not ready for style application")
 
     class IntrinsicSize(BaseIntrinsicSize):
         pass
