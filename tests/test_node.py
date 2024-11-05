@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+from warnings import catch_warnings
 
 import pytest
 
@@ -41,6 +42,17 @@ class BrokenStyle(BaseStyle):
         # A simple layout scheme that allocates twice the viewport size.
         root.layout.content_width = viewport.width * 2
         root.layout.content_height = viewport.height * 2
+
+
+class AttributeTestStyle(BaseStyle):
+    class IntrinsicSize(BaseIntrinsicSize):
+        pass
+
+    class Box(BaseBox):
+        pass
+
+    def reapply(self):
+        assert self._applicator.node.style is self
 
 
 def test_create_leaf():
@@ -371,3 +383,11 @@ def test_apply_before_node_is_ready():
 
     with pytest.warns(RuntimeWarning):
         Node(style=style, applicator=applicator)
+
+
+def test_applicator_has_node_reference():
+    # At the point that the style tries to apply itself, the applicator should already
+    # have a reference to its node.
+
+    with catch_warnings(action="error", category=RuntimeWarning):
+        Node(style=AttributeTestStyle(), applicator=Mock())

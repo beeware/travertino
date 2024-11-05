@@ -44,11 +44,11 @@ class Node:
 
     @applicator.setter
     def applicator(self, applicator):
-        self._applicator = applicator
-        self.style._applicator = applicator
-
         if applicator:
             applicator.node = self
+
+        self._applicator = applicator
+        self.style._applicator = applicator
 
     @property
     def root(self):
