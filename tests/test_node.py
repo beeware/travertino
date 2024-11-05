@@ -1,5 +1,5 @@
 from unittest.mock import Mock
-from warnings import catch_warnings
+from warnings import catch_warnings, filterwarnings
 
 import pytest
 
@@ -389,5 +389,6 @@ def test_applicator_has_node_reference():
     # At the point that the style tries to apply itself, the applicator should already
     # have a reference to its node.
 
-    with catch_warnings(action="error", category=RuntimeWarning):
+    with catch_warnings():
+        filterwarnings("error", category=RuntimeWarning)
         Node(style=AttributeTestStyle(), applicator=Mock())
