@@ -332,6 +332,32 @@ def test_assign_applicator_none(node):
     node.style.reapply.assert_not_called()
 
 
+def assign_new_applicator():
+    # Assigning a new applicator clears the reference to node on the old applicator.
+    applicator_1 = Mock()
+    node = Node(style=Style(), applicator=applicator_1)
+
+    assert applicator_1.node is node
+
+    applicator_2 = Mock()
+    node.applicator = applicator_2
+
+    assert applicator_1.node is None
+    assert applicator_2.node is node
+
+
+def assign_new_applicator_none():
+    # Assigning None to applicator clears the reference to node on the old applicator.
+    applicator = Mock()
+    node = Node(style=Style(), applicator=applicator)
+
+    assert applicator.node is node
+
+    node.applicator = None
+
+    assert applicator.node is None
+
+
 def test_assign_style_with_applicator():
     style_1 = Style(int_prop=5)
     node = Node(style=style_1, applicator=Mock())
@@ -388,6 +414,11 @@ def test_apply_before_node_is_ready():
 def test_applicator_has_node_reference():
     # At the point that the style tries to apply itself, the applicator should already
     # have a reference to its node.
+
+    # We can't just check it after creating the widget, because at that point the
+    # reapply will have already happened. AttributeTestStyle has a reapply() method
+    # that asserts the reference trail of style -> applicator -> node -> style is
+    # already intact at the point that reapply is called.
 
     with catch_warnings():
         filterwarnings("error", category=RuntimeWarning)
