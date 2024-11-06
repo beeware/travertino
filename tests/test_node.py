@@ -258,6 +258,7 @@ def test_clear():
 
 
 def test_create_with_no_applicator():
+    """A node can be created without an applicator."""
     style = Style(int_prop=5)
     node = Node(style=style)
 
@@ -271,6 +272,7 @@ def test_create_with_no_applicator():
 
 
 def test_create_with_applicator():
+    """A node can be created with an applicator."""
     style = Style(int_prop=5)
     applicator = Mock()
     node = Node(style=style, applicator=applicator)
@@ -298,6 +300,7 @@ def test_create_with_applicator():
     ],
 )
 def test_assign_applicator(node):
+    """A node can be assigned an applicator after creation."""
     node.style.reapply.reset_mock()
 
     applicator = Mock()
@@ -321,6 +324,7 @@ def test_assign_applicator(node):
     ],
 )
 def test_assign_applicator_none(node):
+    """A node can have its applicator set to None."""
     node.style.reapply.reset_mock()
 
     node.applicator = None
@@ -333,7 +337,7 @@ def test_assign_applicator_none(node):
 
 
 def assign_new_applicator():
-    # Assigning a new applicator clears the reference to node on the old applicator.
+    """Assigning a new applicator clears reference to node on the old applicator."""
     applicator_1 = Mock()
     node = Node(style=Style(), applicator=applicator_1)
 
@@ -347,7 +351,7 @@ def assign_new_applicator():
 
 
 def assign_new_applicator_none():
-    # Assigning None to applicator clears the reference to node on the old applicator.
+    """Assigning None to applicator clears reference to node on the old applicator."""
     applicator = Mock()
     node = Node(style=Style(), applicator=applicator)
 
@@ -359,6 +363,7 @@ def assign_new_applicator_none():
 
 
 def test_assign_style_with_applicator():
+    """Assigning a new style triggers a reapply if an applicator is already present."""
     style_1 = Style(int_prop=5)
     node = Node(style=style_1, applicator=Mock())
 
@@ -378,6 +383,7 @@ def test_assign_style_with_applicator():
 
 
 def test_assign_style_with_no_applicator():
+    """Assigning a new style doesn't trigger a reapply if an applicator isn't present."""
     style_1 = Style(int_prop=5)
     node = Node(style=style_1)
 
@@ -397,6 +403,7 @@ def test_assign_style_with_no_applicator():
 
 
 def test_apply_before_node_is_ready():
+    """Triggering a reapply raises a warning if the node is not ready to apply style."""
     style = BrokenStyle()
     applicator = Mock()
 
@@ -412,8 +419,7 @@ def test_apply_before_node_is_ready():
 
 
 def test_applicator_has_node_reference():
-    # At the point that the style tries to apply itself, the applicator should already
-    # have a reference to its node.
+    """Applicator should have a reference to its node before style is first applied."""
 
     # We can't just check it after creating the widget, because at that point the
     # reapply will have already happened. AttributeTestStyle has a reapply() method
