@@ -19,8 +19,30 @@ def assert_font(font, family, size, style, variant, weight):
     assert font.weight == weight
 
 
-def test_equality():
-    assert Font("Comic Sans", "12 pt") == Font("Comic Sans", 12, NORMAL, NORMAL, NORMAL)
+@pytest.mark.parametrize(
+    "font",
+    [
+        Font("Comic Sans", "12 pt"),
+        Font("Comic Sans", 12),
+        Font("Comic Sans", 12, NORMAL, NORMAL, NORMAL),
+    ],
+)
+def test_equality(font):
+    assert font == Font("Comic Sans", "12 pt")
+
+
+@pytest.mark.parametrize(
+    "font",
+    [
+        Font("Comic Sans", 13),
+        Font("Comic Sans", 12, ITALIC),
+        Font("Times New Roman", 12, NORMAL, NORMAL, NORMAL),
+        "a string",
+        5,
+    ],
+)
+def test_inqequality(font):
+    assert font != Font("Comic Sans", "12 pt")
 
 
 def test_hash():
