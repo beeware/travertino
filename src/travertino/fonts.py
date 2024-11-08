@@ -53,13 +53,16 @@ class Font:
         )
 
     def __eq__(self, other):
-        return (
-            self.family == other.family
-            and self.size == other.size
-            and self.style == other.style
-            and self.variant == other.variant
-            and self.weight == other.weight
-        )
+        try:
+            return (
+                self.family == other.family
+                and self.size == other.size
+                and self.style == other.style
+                and self.variant == other.variant
+                and self.weight == other.weight
+            )
+        except AttributeError:
+            return False
 
     def normal_style(self):
         "Generate a normal style version of this font"
