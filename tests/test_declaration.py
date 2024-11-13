@@ -318,6 +318,17 @@ def test_property_with_implicit_default(StyleClass):
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_set_initial_no_apply(StyleClass):
+    """If a property hasn't been set, assigning it its initial value shouldn't apply."""
+    style = StyleClass()
+
+    # 0 is the initial value
+    style.explicit_value = 0
+
+    style.apply.assert_not_called()
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
 def test_directional_property(StyleClass):
     style = StyleClass()
 
