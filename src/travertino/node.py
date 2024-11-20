@@ -1,9 +1,11 @@
 class Node:
     def __init__(self, style, applicator=None, children=None):
+        # Explicitly set the internal attribute first, since the setter for style will
+        # access the applicator property.
+        self._applicator = None
+
+        self.style = style
         self.applicator = applicator
-        self.style = style.copy(applicator)
-        self.intrinsic = self.style.IntrinsicSize()
-        self.layout = self.style.Box(self)
 
         self._parent = None
         self._root = None
@@ -13,6 +15,49 @@ class Node:
             self._children = []
             for child in children:
                 self.add(child)
+
+    @property
+    def style(self):
+        """The node's style.
+
+        Assigning a style triggers an application of that style if an applicator has
+        already been assigned.
+        """
+        return self._style
+
+    @style.setter
+    def style(self, style):
+        self._style = style.copy()
+        self.intrinsic = self.style.IntrinsicSize()
+        self.layout = self.style.Box(self)
+
+        if self.applicator:
+            self.style._applicator = self.applicator
+
+    @property
+    def applicator(self):
+        """This node's applicator, which handles applying the style.
+
+        Assigning an applicator triggers an application of the node's style.
+        """
+        return self._applicator
+
+    @applicator.setter
+    def applicator(self, applicator):
+        if self.applicator:
+            # If an existing applicator is present, clear its reference to this node.
+            self.applicator.node = None
+
+        if applicator:
+            # This needs to happen *before* assigning the applicator to the style,
+            # below, because as part of receiving the applicator, the style will
+            # reapply itself. How this happens will vary with applicator
+            # implementation, but will probably need access to the node.
+            applicator.node = self
+
+        self._applicator = applicator
+        # This triggers style.reapply():
+        self.style._applicator = applicator
 
     @property
     def root(self):

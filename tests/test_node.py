@@ -1,12 +1,20 @@
+from unittest.mock import Mock
+from warnings import catch_warnings, filterwarnings
+
 import pytest
 
-from travertino.declaration import BaseStyle
+from tests.utils import mock_attr, prep_style_class
+from travertino.declaration import BaseStyle, Choices, validated_property
 from travertino.layout import BaseBox, Viewport
 from travertino.node import Node
 from travertino.size import BaseIntrinsicSize
 
 
+@prep_style_class
+@mock_attr("reapply")
 class Style(BaseStyle):
+    int_prop: int = validated_property(Choices(integer=True))
+
     class IntrinsicSize(BaseIntrinsicSize):
         pass
 
@@ -17,6 +25,34 @@ class Style(BaseStyle):
         # A simple layout scheme that allocates twice the viewport size.
         root.layout.content_width = viewport.width * 2
         root.layout.content_height = viewport.height * 2
+
+
+@prep_style_class
+class BrokenStyle(BaseStyle):
+    def reapply(self):
+        raise AttributeError("Missing attribute, node not ready for style application")
+
+    class IntrinsicSize(BaseIntrinsicSize):
+        pass
+
+    class Box(BaseBox):
+        pass
+
+    def layout(self, root, viewport):
+        # A simple layout scheme that allocates twice the viewport size.
+        root.layout.content_width = viewport.width * 2
+        root.layout.content_height = viewport.height * 2
+
+
+class AttributeTestStyle(BaseStyle):
+    class IntrinsicSize(BaseIntrinsicSize):
+        pass
+
+    class Box(BaseBox):
+        pass
+
+    def reapply(self):
+        assert self._applicator.node.style is self
 
 
 def test_create_leaf():
@@ -219,3 +255,177 @@ def test_clear():
         assert child.root == child
 
     assert node.children == []
+
+
+def test_create_with_no_applicator():
+    """A node can be created without an applicator."""
+    style = Style(int_prop=5)
+    node = Node(style=style)
+
+    # Style copies on assignment.
+    assert isinstance(node.style, Style)
+    assert node.style == style
+    assert node.style is not style
+
+    # Since no applicator has been assigned, style wasn't applied.
+    node.style.reapply.assert_not_called()
+
+
+def test_create_with_applicator():
+    """A node can be created with an applicator."""
+    style = Style(int_prop=5)
+    applicator = Mock()
+    node = Node(style=style, applicator=applicator)
+
+    # Style copies on assignment.
+    assert isinstance(node.style, Style)
+    assert node.style == style
+    assert node.style is not style
+
+    # Applicator assignment does *not* copy.
+    assert node.applicator is applicator
+    # Applicator gets a reference back to its node and to the style.
+    assert applicator.node is node
+    assert node.style._applicator is applicator
+
+    # Assigning a non-None applicator should always apply style.
+    node.style.reapply.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        Node(style=Style()),
+        Node(style=Style(), applicator=Mock()),
+    ],
+)
+def test_assign_applicator(node):
+    """A node can be assigned an applicator after creation."""
+    node.style.reapply.reset_mock()
+
+    applicator = Mock()
+    node.applicator = applicator
+
+    # Applicator assignment does *not* copy.
+    assert node.applicator is applicator
+    # Applicator gets a reference back to its node and to the style.
+    assert applicator.node is node
+    assert node.style._applicator is applicator
+
+    # Assigning a non-None applicator should always apply style.
+    node.style.reapply.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        Node(style=Style()),
+        Node(style=Style(), applicator=Mock()),
+    ],
+)
+def test_assign_applicator_none(node):
+    """A node can have its applicator set to None."""
+    node.style.reapply.reset_mock()
+
+    node.applicator = None
+    assert node.applicator is None
+
+    # Should be updated on style as well
+    assert node.style._applicator is None
+    # Assigning None to applicator does not trigger reapply.
+    node.style.reapply.assert_not_called()
+
+
+def assign_new_applicator():
+    """Assigning a new applicator clears reference to node on the old applicator."""
+    applicator_1 = Mock()
+    node = Node(style=Style(), applicator=applicator_1)
+
+    assert applicator_1.node is node
+
+    applicator_2 = Mock()
+    node.applicator = applicator_2
+
+    assert applicator_1.node is None
+    assert applicator_2.node is node
+
+
+def assign_new_applicator_none():
+    """Assigning None to applicator clears reference to node on the old applicator."""
+    applicator = Mock()
+    node = Node(style=Style(), applicator=applicator)
+
+    assert applicator.node is node
+
+    node.applicator = None
+
+    assert applicator.node is None
+
+
+def test_assign_style_with_applicator():
+    """Assigning a new style triggers a reapply if an applicator is already present."""
+    style_1 = Style(int_prop=5)
+    node = Node(style=style_1, applicator=Mock())
+
+    node.style.reapply.reset_mock()
+    style_2 = Style(int_prop=10)
+    node.style = style_2
+
+    # Style copies on assignment.
+    assert isinstance(node.style, Style)
+    assert node.style == style_2
+    assert node.style is not style_2
+
+    assert node.style != style_1
+
+    # Since an applicator has already been assigned, assigning style applies the style.
+    node.style.reapply.assert_called_once()
+
+
+def test_assign_style_with_no_applicator():
+    """Assigning a new style doesn't trigger a reapply if an applicator isn't present."""
+    style_1 = Style(int_prop=5)
+    node = Node(style=style_1)
+
+    node.style.reapply.reset_mock()
+    style_2 = Style(int_prop=10)
+    node.style = style_2
+
+    # Style copies on assignment.
+    assert isinstance(node.style, Style)
+    assert node.style == style_2
+    assert node.style is not style_2
+
+    assert node.style != style_1
+
+    # Since no applicator was present, style should not be applied.
+    node.style.reapply.assert_not_called()
+
+
+def test_apply_before_node_is_ready():
+    """Triggering a reapply raises a warning if the node is not ready to apply style."""
+    style = BrokenStyle()
+    applicator = Mock()
+
+    with pytest.warns(RuntimeWarning):
+        node = Node(style=style)
+        node.applicator = applicator
+
+    with pytest.warns(RuntimeWarning):
+        node.style = BrokenStyle()
+
+    with pytest.warns(RuntimeWarning):
+        Node(style=style, applicator=applicator)
+
+
+def test_applicator_has_node_reference():
+    """Applicator should have a reference to its node before style is first applied."""
+
+    # We can't just check it after creating the widget, because at that point the
+    # reapply will have already happened. AttributeTestStyle has a reapply() method
+    # that asserts the reference trail of style -> applicator -> node -> style is
+    # already intact at the point that reapply is called.
+
+    with catch_warnings():
+        filterwarnings("error", category=RuntimeWarning)
+        Node(style=AttributeTestStyle(), applicator=Mock())

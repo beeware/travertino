@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools==75.1.0",
+    "setuptools==75.5.0",
     "setuptools_scm==8.1.0",
 ]
 build-backend = "setuptools.build_meta"
@@ -10,7 +10,7 @@ dynamic = ["version"]
 name = "travertino"
 description = "A set of constants and base classes for describing user interface layouts."
 readme = "README.rst"
-requires-python = ">= 3.8"
+requires-python = ">= 3.9"
 license.text = "New BSD"
 authors = [
     {name="Russell Keith-Magee", email="russell@keith-magee.com"},
@@ -29,12 +29,12 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Software Development",
     "Topic :: Software Development :: User Interfaces",
@@ -44,12 +44,10 @@ classifiers = [
 # Extras used by developers *of* Travertino are pinned to specific versions to
 # ensure environment consistency.
 dev = [
-    # Pre-commit 3.6.0 deprecated support for Python 3.8
-    "pre-commit == 3.5.0 ; python_version < '3.9'",
-    "pre-commit == 4.0.1 ; python_version >= '3.9'",
+    "pre-commit == 4.0.1",
     "pytest == 8.3.3",
     "setuptools_scm == 8.1.0",
-    "tox == 4.21.2",
+    "tox == 4.23.2",
 ]
 
 [project.urls]

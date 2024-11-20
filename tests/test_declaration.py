@@ -6,7 +6,7 @@ from warnings import catch_warnings, filterwarnings
 
 import pytest
 
-from tests.test_choices import mock_apply, prep_style_class
+from tests.utils import mock_attr, prep_style_class
 from travertino.declaration import (
     BaseStyle,
     Choices,
@@ -62,7 +62,7 @@ class Style(BaseStyle):
 with catch_warnings():
     filterwarnings("ignore", category=DeprecationWarning)
 
-    @mock_apply
+    @mock_attr("apply")
     class DeprecatedStyle(BaseStyle):
         pass
 
@@ -101,6 +101,12 @@ class Sibling(BaseStyle):
     pass
 
 
+@prep_style_class
+@mock_attr("reapply")
+class MockedReapplyStyle(BaseStyle):
+    pass
+
+
 def test_invalid_style():
     with pytest.raises(ValueError):
         # Define an invalid initial value on a validated property
@@ -129,6 +135,15 @@ def test_create_and_copy(StyleClass):
     assert dup.explicit_const == VALUE2
     assert dup.explicit_value == 0
     assert dup.implicit == VALUE3
+
+
+def test_deprecated_copy():
+    style = MockedReapplyStyle()
+
+    with pytest.warns(DeprecationWarning):
+        style_copy = style.copy(applicator=object())
+
+    style_copy.reapply.assert_called_once()
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
@@ -311,6 +326,17 @@ def test_property_with_implicit_default(StyleClass):
     del style.implicit
     assert style.implicit is None
     style.apply.assert_called_once_with("implicit", None)
+
+
+@pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
+def test_set_initial_no_apply(StyleClass):
+    """If a property hasn't been set, assigning it its initial value shouldn't apply."""
+    style = StyleClass()
+
+    # 0 is the initial value
+    style.explicit_value = 0
+
+    style.apply.assert_not_called()
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
