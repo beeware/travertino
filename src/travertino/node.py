@@ -1,5 +1,10 @@
 class Node:
     def __init__(self, style, applicator=None, children=None):
+        # Parent needs to be primed before style is (potentially) applied with
+        # assignment of applicator.
+        self._parent = None
+        self._root = None
+
         # Explicitly set the internal attribute first, since the setter for style will
         # access the applicator property.
         self._applicator = None
@@ -7,8 +12,6 @@ class Node:
         self.style = style
         self.applicator = applicator
 
-        self._parent = None
-        self._root = None
         if children is None:
             self._children = None
         else:
