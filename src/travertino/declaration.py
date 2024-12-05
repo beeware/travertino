@@ -11,7 +11,7 @@ filterwarnings("default", category=DeprecationWarning)
 
 class ImmutableList:
     def __init__(self, iterable):
-        self._data = [*iterable]
+        self._data = list(iterable)
 
     def __getitem__(self, index):
         return self._data[index]
