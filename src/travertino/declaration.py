@@ -1,3 +1,4 @@
+from abc import ABC, abstractproperty
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from warnings import filterwarnings, warn
@@ -30,6 +31,18 @@ class ImmutableList:
 
     def __repr__(self):
         return repr(self._data)
+
+    def __reversed__(self):
+        return reversed(self._data)
+
+    def index(self, value):
+        return self._data.index(value)
+
+    def count(self, value):
+        return self._data.count(value)
+
+
+Sequence.register(ImmutableList)
 
 
 class Choices:
@@ -108,19 +121,7 @@ class validated_property:
         :param initial: The initial value for the property.
         """
         self.choices = choices
-        self.initial = None
-
-        try:
-            # If an initial value has been provided, it must be consistent with
-            # the choices specified.
-            if initial is not None:
-                self.initial = self.validate(initial)
-        except ValueError:
-            # Unfortunately, __set_name__ hasn't been called yet, so we don't know the
-            # property's name.
-            raise ValueError(
-                f"Invalid initial value {initial!r}. Available choices: {choices}"
-            )
+        self.initial = None if initial is None else self.validate(initial)
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -161,8 +162,8 @@ class validated_property:
             obj.apply(self.name, self.initial)
 
     @property
-    def _name_if_set(self, default=""):
-        return f" {self.name}" if hasattr(self, "name") else default
+    def _name_if_set(self):
+        return f" {self.name}" if hasattr(self, "name") else ""
 
     def validate(self, value):
         try:
@@ -209,7 +210,31 @@ class list_property(validated_property):
         return ImmutableList(result)
 
 
-class directional_property:
+class property_alias(ABC):
+    """A base class for list / composite properties."""
+
+    def __set_name__(self, owner, name):
+        self.name = name
+        owner._BASE_ALL_PROPERTIES[owner].add(self.name)
+
+    def __delete__(self, obj):
+        for name in self.property_names:
+            del obj[name]
+
+    def is_set_on(self, obj):
+        return any(hasattr(obj, name) for name in self.property_names)
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+
+        return tuple(obj[name] for name in self.property_names)
+
+    @abstractproperty
+    def __set__(self, obj, value): ...
+
+
+class directional_property(property_alias):
     DIRECTIONS = [TOP, RIGHT, BOTTOM, LEFT]
     ASSIGNMENT_SCHEMES = {
         #   T  R  B  L
@@ -223,22 +248,11 @@ class directional_property:
         """Define a property attribute that proxies for top/right/bottom/left alternatives.
 
         :param name_format: The format from which to generate subproperties. "{}" will
-            be replaced with "_top", etc.
+            be replaced with "_top", "_bottom", etc.
         """
-        self.name_format = name_format
-
-    def __set_name__(self, owner, name):
-        self.name = name
-        owner._BASE_ALL_PROPERTIES[owner].add(self.name)
-
-    def format(self, direction):
-        return self.name_format.format(f"_{direction}")
-
-    def __get__(self, obj, objtype=None):
-        if obj is None:
-            return self
-
-        return tuple(obj[self.format(direction)] for direction in self.DIRECTIONS)
+        self.property_names = [
+            name_format.format(f"_{direction}") for direction in self.DIRECTIONS
+        ]
 
     def __set__(self, obj, value):
         if value is self:
@@ -250,21 +264,103 @@ class directional_property:
             value = (value,)
 
         if order := self.ASSIGNMENT_SCHEMES.get(len(value)):
-            for direction, index in zip(self.DIRECTIONS, order):
-                obj[self.format(direction)] = value[index]
+            for name, index in zip(self.property_names, order):
+                obj[name] = value[index]
         else:
             raise ValueError(
                 f"Invalid value for '{self.name}'; value must be a number, or a 1-4 tuple."
             )
 
-    def __delete__(self, obj):
-        for direction in self.DIRECTIONS:
-            del obj[self.format(direction)]
 
-    def is_set_on(self, obj):
-        return any(
-            hasattr(obj, self.format(direction)) for direction in self.DIRECTIONS
-        )
+class composite_property(property_alias):
+    def __init__(self, optional, required, parse_str=str.split):
+        """Define a property attribute that proxies for an arbitrary set of properties.
+
+        :param optional: The names of aliased properties that are optional in
+           assignment. Order is irrelevant, unless the same value is valid for more than
+           one property; in that case, values are assigned by priority of which one coud
+           apply to the fewest properties, and when that ties, they're assigned in
+           order.
+        :param required: Which properties, if any, are required when setting this
+            property. In assignment, these must be specified last and in order.
+        :param parse_str: A callable with which to parse a string into valid input.
+        """
+        self.optional = optional
+        self.required = required
+        self.property_names = self.optional + self.required
+        self.min_num = len(self.required)
+        self.max_num = len(self.required) + len(self.optional)
+        self.parse_str = parse_str
+
+    def __set__(self, obj, composite_value):
+        if composite_value is self:
+            # This happens during autogenerated dataclass __init__ when no value is
+            # supplied.
+            return
+
+        if isinstance(composite_value, str):
+            composite_value = self.parse_str(composite_value)
+
+        if not self.min_num <= len(composite_value) <= self.max_num:
+            raise TypeError(
+                f"Composite property {self.name} must be set with at least "
+                f"{self.min_num} and no more than {self.max_num} values."
+            )
+
+        # Don't clear and set values until we're sure everything validates.
+        staged = {}
+
+        # Handle the required values first. They have to be there, and in order, or the
+        # whole assignment is invalid.
+        required_values = composite_value[-len(self.required) :]
+
+        for name, value in zip(self.required, required_values):
+            # Let error propagate if it raises.
+            staged[name] = getattr(obj.__class__, name).validate(value)
+
+        # Next, look through the optional values.
+        optional_values = composite_value[: -len(self.required)]
+
+        # For each value, determine which properties can accept it.
+        values_with_valid_props = []
+        for value in optional_values:
+            valid_props = []
+            for name in self.optional:
+                try:
+                    getattr(obj.__class__, name).validate(value)
+                    valid_props.append(name)
+                except ValueError:
+                    pass
+            if not valid_props:
+                raise ValueError(
+                    f"Value {value} not valid for any optional properties of composite "
+                    f"property {self.name}"
+                )
+
+            values_with_valid_props.append((value, valid_props))
+
+        # Then assign the values in order of specificity; that is, a value
+        # gets "priority" if it matches fewer possible properties. (Values of equal
+        # specificity are simply assigned to properties in order.)
+        for value, valid_props in sorted(
+            values_with_valid_props, key=lambda tup: len(tup[1])
+        ):
+            for name in valid_props:
+                if name not in staged:
+                    staged[name] = value
+                    break
+            else:
+                # Didn't break; no valid property is still free.
+                raise ValueError(
+                    f"Value {value} not valid for any optional properties of composite "
+                    f"property {self.name} that are not already being assigned."
+                )
+
+        # Apply staged properties, and clear any that haven't been staged.
+        for name in self.optional:
+            if name not in staged:
+                del obj[name]
+        obj |= staged
 
 
 class BaseStyle:
@@ -276,7 +372,9 @@ class BaseStyle:
     to still get the keyword-only behavior from the included __init__.
     """
 
+    # Contains only "actual" properties
     _BASE_PROPERTIES = defaultdict(set)
+    # Also includes property aliases
     _BASE_ALL_PROPERTIES = defaultdict(set)
 
     def __init_subclass__(cls):
@@ -284,10 +382,10 @@ class BaseStyle:
         cls._PROPERTIES = cls._BASE_PROPERTIES[cls]
         cls._ALL_PROPERTIES = cls._BASE_ALL_PROPERTIES[cls]
 
-    # Fallback in case subclass isn't decorated as subclass (probably from using
+    # Fallback in case subclass isn't decorated as dataclass (probably from using
     # previous API) or for pre-3.10, before kw_only argument existed.
-    def __init__(self, **style):
-        self.update(**style)
+    def __init__(self, **properties):
+        self.update(**properties)
 
     @property
     def _applicator(self):
@@ -330,9 +428,9 @@ class BaseStyle:
         for name in self._PROPERTIES:
             self.apply(name, self[name])
 
-    def update(self, **styles):
-        "Set multiple styles on the style definition."
-        for name, value in styles.items():
+    def update(self, **properties):
+        """Set multiple styles on the style definition."""
+        for name, value in properties.items():
             name = name.replace("-", "_")
             if name not in self._ALL_PROPERTIES:
                 raise NameError(f"Unknown style {name}")
@@ -340,7 +438,7 @@ class BaseStyle:
             self[name] = value
 
     def copy(self, applicator=None):
-        "Create a duplicate of this style declaration."
+        """Create a duplicate of this style declaration."""
         dup = self.__class__()
         dup.update(**self)
 
@@ -376,13 +474,13 @@ class BaseStyle:
             raise KeyError(name)
 
     def keys(self):
-        return {name for name in self._PROPERTIES if name in self}
+        return {*self}
 
     def items(self):
-        return [(name, self[name]) for name in self._PROPERTIES if name in self]
+        return [(name, self[name]) for name in self]
 
     def __len__(self):
-        return sum(1 for name in self._PROPERTIES if name in self)
+        return sum(1 for _ in self)
 
     def __contains__(self, name):
         return name in self._ALL_PROPERTIES and (
@@ -416,6 +514,7 @@ class BaseStyle:
     ######################################################################
     # Get the rendered form of the style declaration
     ######################################################################
+
     def __str__(self):
         return "; ".join(
             f"{name.replace('_', '-')}: {value}" for name, value in sorted(self.items())

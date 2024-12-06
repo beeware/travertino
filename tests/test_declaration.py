@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from unittest.mock import call
 from warnings import catch_warnings, filterwarnings
 
@@ -18,8 +19,11 @@ from travertino.declaration import (
 VALUE1 = "value1"
 VALUE2 = "value2"
 VALUE3 = "value3"
+VALUE4 = "value4"
+VALUE5 = "value5"
 VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, None, integer=True)
 DEFAULT_VALUE_CHOICES = Choices(VALUE1, VALUE2, VALUE3, integer=True)
+OTHER_CHOICES = Choices(VALUE4, VALUE5)
 
 
 @prep_style_class
@@ -45,7 +49,7 @@ class Style(BaseStyle):
     thing_left: str | int = validated_property(choices=VALUE_CHOICES, initial=0)
 
     # Doesn't need to be tested in deprecated API:
-    list_prop: list[str] = list_property(choices=VALUE_CHOICES, initial=(VALUE2,))
+    list_prop: list[str] = list_property(choices=VALUE_CHOICES, initial=[VALUE2])
 
 
 with catch_warnings():
@@ -598,6 +602,14 @@ def test_list_property_list_like():
     for _ in prop:
         count += 1
     assert count == 4
+
+    assert [*reversed(prop)] == [VALUE2, 3, 2, 1]
+
+    assert prop.index(3) == 2
+
+    assert prop.count(VALUE2) == 1
+
+    assert isinstance(prop, Sequence)
 
 
 @pytest.mark.parametrize("StyleClass", [Style, DeprecatedStyle])
