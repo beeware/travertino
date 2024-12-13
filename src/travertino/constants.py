@@ -8,6 +8,8 @@ RIGHT = "right"
 TOP = "top"
 BOTTOM = "bottom"
 CENTER = "center"
+START = "start"
+END = "end"
 
 ######################################################################
 # Direction
