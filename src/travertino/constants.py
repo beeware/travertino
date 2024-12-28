@@ -10,6 +10,8 @@ BOTTOM = "bottom"
 CENTER = "center"
 START = "start"
 END = "end"
+WIDTH = "width"
+HEIGHT = "height"
 
 ######################################################################
 # Direction
