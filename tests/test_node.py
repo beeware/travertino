@@ -21,6 +21,24 @@ class Style(BaseStyle):
     class Box(BaseBox):
         pass
 
+    def layout(self, viewport):
+        # A simple layout scheme that allocates twice the viewport size.
+        self._applicator.node.layout.content_width = viewport.width * 2
+        self._applicator.node.layout.content_height = viewport.height * 2
+
+
+@prep_style_class
+@mock_attr("reapply")
+class OldStyle(BaseStyle):
+    # Uses two-argument layout(), as in Toga <= 0.4.8
+    int_prop: int = validated_property(Choices(integer=True))
+
+    class IntrinsicSize(BaseIntrinsicSize):
+        pass
+
+    class Box(BaseBox):
+        pass
+
     def layout(self, node, viewport):
         # A simple layout scheme that allocates twice the viewport size.
         node.layout.content_width = viewport.width * 2
@@ -38,10 +56,10 @@ class BrokenStyle(BaseStyle):
     class Box(BaseBox):
         pass
 
-    def layout(self, root, viewport):
+    def layout(self, viewport):
         # A simple layout scheme that allocates twice the viewport size.
-        root.layout.content_width = viewport.width * 2
-        root.layout.content_height = viewport.height * 2
+        self._applicator.node.layout.content_width = viewport.width * 2
+        self._applicator.node.layout.content_height = viewport.height * 2
 
 
 class AttributeTestStyle(BaseStyle):
@@ -130,7 +148,8 @@ def test_create_node():
     assert child3.root == new_node
 
 
-def test_refresh():
+@pytest.mark.parametrize("StyleClass", [Style, OldStyle])
+def test_refresh(StyleClass):
     """The layout can be refreshed, and the applicator invoked"""
 
     # Define an applicator that tracks the node being rendered and its size
@@ -155,7 +174,7 @@ def test_refresh():
             )
 
     # Define a simple 2 level tree of nodes.
-    style = Style()
+    style = StyleClass()
     child1 = TestNode(style=style)
     child2 = TestNode(style=style)
     child3 = TestNode(style=style)
