@@ -1,3 +1,6 @@
+from inspect import signature
+
+
 class Node:
     def __init__(self, style, applicator=None, children=None):
         # Parent needs to be primed before style is (potentially) applied with
@@ -169,7 +172,16 @@ class Node:
         if self._root:
             self._root.refresh(viewport)
         else:
-            self.style.layout(self, viewport)
+            ######################################################################
+            # 2024-12: Backwards compatibility for Toga <= 0.4.8
+            ######################################################################
+            if "node" in signature(self.style.layout).parameters:
+                self.style.layout(self, viewport)
+            else:
+                self.style.layout(viewport)
+            ######################################################################
+            # End backwards compatibility
+            ######################################################################
             if self.applicator:
                 self.applicator.set_bounds()
 
