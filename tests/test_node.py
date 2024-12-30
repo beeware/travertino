@@ -21,10 +21,10 @@ class Style(BaseStyle):
     class Box(BaseBox):
         pass
 
-    def layout(self, root, viewport):
+    def layout(self, node, viewport):
         # A simple layout scheme that allocates twice the viewport size.
-        root.layout.content_width = viewport.width * 2
-        root.layout.content_height = viewport.height * 2
+        node.layout.content_width = viewport.width * 2
+        node.layout.content_height = viewport.height * 2
 
 
 @prep_style_class
