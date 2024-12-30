@@ -175,7 +175,8 @@ class Node:
             ######################################################################
             # 2024-12: Backwards compatibility for Toga <= 0.4.8
             ######################################################################
-            if "node" in signature(self.style.layout).parameters:
+            params = signature(self.style.layout).parameters
+            if len(params) == 2 and "_deprecated_usage" not in params:
                 self.style.layout(self, viewport)
             else:
                 self.style.layout(viewport)

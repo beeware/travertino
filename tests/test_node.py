@@ -27,22 +27,17 @@ class Style(BaseStyle):
         self._applicator.node.layout.content_height = viewport.height * 2
 
 
-@prep_style_class
-@mock_attr("reapply")
-class OldStyle(BaseStyle):
+class OldStyle(Style):
     # Uses two-argument layout(), as in Toga <= 0.4.8
-    int_prop: int = validated_property(Choices(integer=True))
-
-    class IntrinsicSize(BaseIntrinsicSize):
-        pass
-
-    class Box(BaseBox):
-        pass
-
     def layout(self, node, viewport):
-        # A simple layout scheme that allocates twice the viewport size.
-        node.layout.content_width = viewport.width * 2
-        node.layout.content_height = viewport.height * 2
+        super().layout(viewport)
+
+
+class OldStyleDifferentName(Style):
+    # Just to be on the paranoid side, also test with a different parameter name, like
+    # this test used to have.
+    def layout(self, root, viewport):
+        super().layout(viewport)
 
 
 @prep_style_class
@@ -148,7 +143,7 @@ def test_create_node():
     assert child3.root == new_node
 
 
-@pytest.mark.parametrize("StyleClass", [Style, OldStyle])
+@pytest.mark.parametrize("StyleClass", [Style, OldStyle, OldStyleDifferentName])
 def test_refresh(StyleClass):
     """The layout can be refreshed, and the applicator invoked"""
 
