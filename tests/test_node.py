@@ -33,13 +33,6 @@ class OldStyle(Style):
         super().layout(viewport)
 
 
-class OldStyleDifferentName(Style):
-    # Just to be on the paranoid side, also test with a different parameter name, like
-    # this test used to have.
-    def layout(self, root, viewport):
-        super().layout(viewport)
-
-
 @prep_style_class
 class BrokenStyle(BaseStyle):
     def reapply(self):
@@ -143,7 +136,7 @@ def test_create_node():
     assert child3.root == new_node
 
 
-@pytest.mark.parametrize("StyleClass", [Style, OldStyle, OldStyleDifferentName])
+@pytest.mark.parametrize("StyleClass", [Style, OldStyle])
 def test_refresh(StyleClass):
     """The layout can be refreshed, and the applicator invoked"""
 

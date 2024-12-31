@@ -172,19 +172,31 @@ class Node:
         if self._root:
             self._root.refresh(viewport)
         else:
-            ######################################################################
-            # 2024-12: Backwards compatibility for Toga <= 0.4.8
-            ######################################################################
-            params = signature(self.style.layout).parameters
-            if len(params) == 1 or "_deprecated_usage" in params:
-                self.style.layout(viewport)
-            else:
-                self.style.layout(self, viewport)
-            ######################################################################
-            # End backwards compatibility
-            ######################################################################
+            self.style.layout(*self._layout_args(viewport))
             if self.applicator:
                 self.applicator.set_bounds()
+
+    ######################################################################
+    # 2024-12: Backwards compatibility for Toga <= 0.4.8
+    ######################################################################
+
+    def _layout_args(self, viewport):
+        if "node" in signature(self.style.layout).parameters:
+            self.__class__._layout_args = self._layout_args_old
+        else:
+            self.__class__._layout_args = self._layout_args_new
+
+        return self._layout_args(viewport)
+
+    def _layout_args_new(self, viewport):
+        return (viewport,)
+
+    def _layout_args_old(self, viewport):
+        return self, viewport
+
+    ######################################################################
+    # End backwards compatibility
+    ######################################################################
 
     def _set_root(self, node, root):
         # Propagate a root node change through a tree.
