@@ -144,7 +144,7 @@ def test_create_node():
     ],
 )
 def test_layout_signature_check(StyleClass, method_name):
-    """Which signauture to use is only checked once."""
+    """Which signature to use is only checked once."""
 
     class Applicator:
         def set_bounds(self):
