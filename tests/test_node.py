@@ -136,6 +136,43 @@ def test_create_node():
     assert child3.root == new_node
 
 
+@pytest.mark.parametrize(
+    "StyleClass, method_name",
+    [
+        (Style, "_layout_args_new"),
+        (OldStyle, "_layout_args_old"),
+    ],
+)
+def test_layout_signature_check(StyleClass, method_name):
+    """Which signauture to use is only checked once."""
+
+    class Applicator:
+        def set_bounds(self):
+            pass
+
+    class TestNode(Node):
+        # So we don't change the actual Node class
+        pass
+
+    # Before refresh() is called, _layout_args is still the original decision-maker.
+    assert TestNode._layout_args != getattr(TestNode, method_name)
+    node_1 = TestNode(style=StyleClass(), applicator=Applicator())
+    node_2 = TestNode(style=StyleClass(), applicator=Applicator())
+    assert node_1._layout_args != getattr(node_1, method_name)
+    assert node_1._layout_args != getattr(node_1, method_name)
+
+    # _layout_args should now be replaced with the correct version -- for the node that
+    #  called refresh, as well as a preexisting other instance, and the class itself.
+    node_1.refresh(Viewport(width=10, height=20))
+    assert TestNode._layout_args == getattr(TestNode, method_name)
+    assert node_1._layout_args == getattr(node_1, method_name)
+    assert node_2._layout_args == getattr(node_2, method_name)
+
+    # Should also hold true for subsequently created instances.
+    node_3 = TestNode(style=StyleClass(), applicator=Applicator())
+    assert node_3._layout_args == getattr(node_3, method_name)
+
+
 @pytest.mark.parametrize("StyleClass", [Style, OldStyle])
 def test_refresh(StyleClass):
     """The layout can be refreshed, and the applicator invoked"""

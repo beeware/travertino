@@ -172,8 +172,8 @@ class Node:
         if self._root:
             self._root.refresh(viewport)
         else:
-            self.style.layout(*self._layout_args(viewport))
             if self.applicator:
+                self.style.layout(*self._layout_args(viewport))
                 self.applicator.set_bounds()
 
     ######################################################################
