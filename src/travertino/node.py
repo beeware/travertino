@@ -182,9 +182,9 @@ class Node:
 
     def _layout_args(self, viewport):
         if "node" in signature(self.style.layout).parameters:
-            self.__class__._layout_args = self._layout_args_old
+            self.__class__._layout_args = self.__class__._layout_args_old
         else:
-            self.__class__._layout_args = self._layout_args_new
+            self.__class__._layout_args = self.__class__._layout_args_new
 
         return self._layout_args(viewport)
 
