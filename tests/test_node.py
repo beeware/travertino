@@ -137,14 +137,14 @@ def test_create_node():
 
 
 @pytest.mark.parametrize(
-    "StyleClass, method_name",
+    "StyleClass, cached_value",
     [
-        (Style, "_layout_args_new"),
-        (OldStyle, "_layout_args_old"),
+        (Style, False),
+        (OldStyle, True),
     ],
 )
-def test_layout_signature_check(StyleClass, method_name):
-    """Which signature to use is only checked once."""
+def test_layout_signature_check(StyleClass, cached_value):
+    """After the first call to refresh(), node class should cache args version."""
 
     class Applicator:
         def set_bounds(self):
@@ -154,23 +154,29 @@ def test_layout_signature_check(StyleClass, method_name):
         # So we don't change the actual Node class
         pass
 
-    # Before refresh() is called, _layout_args is still the original decision-maker.
-    assert TestNode._layout_args != getattr(TestNode, method_name)
+    # Before refresh() is called, the cached value isn't set.
+    assert not hasattr(TestNode, "_cached_old_layout_args")
     node_1 = TestNode(style=StyleClass(), applicator=Applicator())
     node_2 = TestNode(style=StyleClass(), applicator=Applicator())
-    assert node_1._layout_args != getattr(node_1, method_name)
-    assert node_1._layout_args != getattr(node_1, method_name)
 
-    # _layout_args should now be replaced with the correct version -- for the node that
-    #  called refresh, as well as a preexisting other instance, and the class itself.
+    # Check the instances, and again on the class just to be sure nothing has changed
+    # just from creating instances.
+    assert not hasattr(TestNode, "_cached_old_layout_args")
+    assert not hasattr(node_1, "_cached_old_layout_args")
+    assert not hasattr(node_2, "_cached_old_layout_args")
+
+    # Refresh for the first time.
     node_1.refresh(Viewport(width=10, height=20))
-    assert TestNode._layout_args == getattr(TestNode, method_name)
-    assert node_1._layout_args == getattr(node_1, method_name)
-    assert node_2._layout_args == getattr(node_2, method_name)
 
-    # Should also hold true for subsequently created instances.
+    # After refreshing, which signature to use for layout() should be cached on the
+    # class, and thus accessible to both instances.
+    assert TestNode._cached_old_layout_args == cached_value
+    assert node_1._cached_old_layout_args == cached_value
+    assert node_2._cached_old_layout_args == cached_value
+
+    # Verify that a newly created instance can see it too.
     node_3 = TestNode(style=StyleClass(), applicator=Applicator())
-    assert node_3._layout_args == getattr(node_3, method_name)
+    assert node_3._cached_old_layout_args == cached_value
 
 
 @pytest.mark.parametrize("StyleClass", [Style, OldStyle])

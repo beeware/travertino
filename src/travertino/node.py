@@ -173,26 +173,38 @@ class Node:
             self._root.refresh(viewport)
         else:
             if self.applicator:
-                self.style.layout(*self._layout_args(viewport))
+                ######################################################################
+                # 2024-12: Backwards compatibility for Toga <= 0.4.8
+                ######################################################################
+                # (See below)
+                if self._old_layout_args():
+                    self.style.layout(self, viewport)
+                else:
+                    self.style.layout(viewport)
+                ######################################################################
+                # End backwards compatibility
+                ######################################################################
+
                 self.applicator.set_bounds()
 
     ######################################################################
     # 2024-12: Backwards compatibility for Toga <= 0.4.8
     ######################################################################
 
-    def _layout_args(self, viewport):
-        if "node" in signature(self.style.layout).parameters:
-            self.__class__._layout_args = self.__class__._layout_args_old
-        else:
-            self.__class__._layout_args = self.__class__._layout_args_new
+    # Accommodate the earlier signature of layout(), which included the node as a
+    # parameter. This needs to be called on the *instance* -- to have access to the
+    # style -- but it needs to be cached on the *class*, so all instances have access
+    # to it.
 
-        return self._layout_args(viewport)
+    def _old_layout_args(self):
+        try:
+            return self.__class__._cached_old_layout_args
+        except AttributeError:
+            self.__class__._cached_old_layout_args = (
+                "node" in signature(self.style.layout).parameters
+            )
 
-    def _layout_args_new(self, viewport):
-        return (viewport,)
-
-    def _layout_args_old(self, viewport):
-        return self, viewport
+            return self.__class__._cached_old_layout_args
 
     ######################################################################
     # End backwards compatibility
