@@ -181,7 +181,7 @@ class Node:
 
                 except TypeError as error:
                     if (
-                        ".layout() missing 1 required positional argument: 'viewport'"
+                        "layout() missing 1 required positional argument: 'viewport'"
                         in str(error)
                     ):
                         self.style.layout(self, viewport)
