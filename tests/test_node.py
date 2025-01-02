@@ -33,6 +33,18 @@ class OldStyle(Style):
         super().layout(viewport)
 
 
+class TypeErrorStyle(Style):
+    # Uses the correct signature, but raises an unrelated TypeError in layout
+    def layout(self, viewport):
+        raise TypeError("An unrelated TypeError has occurred somewhere in layout()")
+
+
+class OldTypeErrorStyle(Style):
+    # Just to be extra safe...
+    def layout(self, node, viewport):
+        raise TypeError("An unrelated TypeError has occurred somewhere in layout()")
+
+
 @prep_style_class
 class BrokenStyle(BaseStyle):
     def reapply(self):
@@ -136,39 +148,6 @@ def test_create_node():
     assert child3.root == new_node
 
 
-@pytest.mark.parametrize(
-    "StyleClass, cached_value",
-    [
-        (Style, False),
-        (OldStyle, True),
-    ],
-)
-def test_layout_signature_check(StyleClass, cached_value):
-    """After the first call to refresh(), node class should cache args version."""
-
-    class Applicator:
-        def set_bounds(self):
-            pass
-
-    class TestNode(Node):
-        # So we don't change the actual Node class
-        pass
-
-    # Before refresh() is called, the cached value isn't set.
-    assert not hasattr(TestNode, "_cached_old_layout_args")
-
-    # Check again, just to be sure nothing has changed from creating an instance.
-    node = TestNode(style=StyleClass(), applicator=Applicator())
-    assert not hasattr(TestNode, "_cached_old_layout_args")
-
-    # Refresh for the first time.
-    node.refresh(Viewport(width=10, height=20))
-
-    # After refreshing, which signature to use for layout() should be cached on the
-    # class, and thus accessible to both instances.
-    assert TestNode._cached_old_layout_args == cached_value
-
-
 @pytest.mark.parametrize("StyleClass", [Style, OldStyle])
 def test_refresh(StyleClass):
     """The layout can be refreshed, and the applicator invoked"""
@@ -222,6 +201,19 @@ def test_refresh(StyleClass):
     assert child1.applicator.tasks == []
     assert child2.applicator.tasks == []
     assert child3.applicator.tasks == []
+
+
+@pytest.mark.parametrize("StyleClass", [TypeErrorStyle, OldTypeErrorStyle])
+def test_type_error_in_layout(StyleClass):
+    """The shim shouldn't hide unrelated TypeErrors."""
+
+    class Applicator:
+        def set_bounds(self):
+            pass
+
+    node = Node(style=StyleClass(), applicator=Applicator())
+    with pytest.raises(TypeError, match=r"unrelated TypeError"):
+        node.refresh(Viewport(50, 50))
 
 
 def test_add():

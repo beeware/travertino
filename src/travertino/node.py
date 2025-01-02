@@ -1,6 +1,3 @@
-from inspect import signature
-
-
 class Node:
     def __init__(self, style, applicator=None, children=None):
         # Parent needs to be primed before style is (potentially) applied with
@@ -173,42 +170,28 @@ class Node:
             self._root.refresh(viewport)
         else:
             if self.applicator:
+
                 ######################################################################
                 # 2024-12: Backwards compatibility for Toga <= 0.4.8
                 ######################################################################
-                # (See below)
-                if self._old_layout_args():
-                    self.style.layout(self, viewport)
-                else:
+                # Accommodate the earlier signature of layout(), which included the node
+                # as a parameter.
+                try:
                     self.style.layout(viewport)
+
+                except TypeError as error:
+                    if (
+                        ".layout() missing 1 required positional argument: 'viewport'"
+                        in str(error)
+                    ):
+                        self.style.layout(self, viewport)
+                    else:
+                        raise
                 ######################################################################
                 # End backwards compatibility
                 ######################################################################
 
                 self.applicator.set_bounds()
-
-    ######################################################################
-    # 2024-12: Backwards compatibility for Toga <= 0.4.8
-    ######################################################################
-
-    # Accommodate the earlier signature of layout(), which included the node as a
-    # parameter. This needs to be called on the *instance* -- to have access to the
-    # style -- but it needs to be cached on the *class*, so all instances have access
-    # to it.
-
-    def _old_layout_args(self):
-        try:
-            return self.__class__._cached_old_layout_args
-        except AttributeError:
-            self.__class__._cached_old_layout_args = (
-                "node" in signature(self.style.layout).parameters
-            )
-
-            return self.__class__._cached_old_layout_args
-
-    ######################################################################
-    # End backwards compatibility
-    ######################################################################
 
     def _set_root(self, node, root):
         # Propagate a root node change through a tree.
