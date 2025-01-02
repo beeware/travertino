@@ -43,7 +43,6 @@ class TypeErrorStyle(Style):
 
 
 @prep_style_class
-@mock_attr("reapply")
 class OldTypeErrorStyle(Style):
     # Just to be extra safe...
     def layout(self, node, viewport):
