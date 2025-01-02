@@ -28,45 +28,24 @@ class Style(BaseStyle):
 
 
 @prep_style_class
-@mock_attr("reapply")
-class OldStyle(BaseStyle):
+class OldStyle(Style):
     # Uses two-argument layout(), as in Toga <= 0.4.8
-    class IntrinsicSize(BaseIntrinsicSize):
-        pass
-
-    class Box(BaseBox):
-        pass
-
     def layout(self, node, viewport):
         # A simple layout scheme that allocates twice the viewport size.
-        self._applicator.node.layout.content_width = viewport.width * 2
-        self._applicator.node.layout.content_height = viewport.height * 2
+        super().layout(viewport)
 
 
 @prep_style_class
-@mock_attr("reapply")
-class TypeErrorStyle(BaseStyle):
+class TypeErrorStyle(Style):
     # Uses the correct signature, but raises an unrelated TypeError in layout
-    class IntrinsicSize(BaseIntrinsicSize):
-        pass
-
-    class Box(BaseBox):
-        pass
-
     def layout(self, viewport):
         raise TypeError("An unrelated TypeError has occurred somewhere in layout()")
 
 
 @prep_style_class
 @mock_attr("reapply")
-class OldTypeErrorStyle(BaseStyle):
+class OldTypeErrorStyle(Style):
     # Just to be extra safe...
-    class IntrinsicSize(BaseIntrinsicSize):
-        pass
-
-    class Box(BaseBox):
-        pass
-
     def layout(self, node, viewport):
         raise TypeError("An unrelated TypeError has occurred somewhere in layout()")
 
