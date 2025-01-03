@@ -21,10 +21,32 @@ class Style(BaseStyle):
     class Box(BaseBox):
         pass
 
-    def layout(self, root, viewport):
+    def layout(self, viewport):
         # A simple layout scheme that allocates twice the viewport size.
-        root.layout.content_width = viewport.width * 2
-        root.layout.content_height = viewport.height * 2
+        self._applicator.node.layout.content_width = viewport.width * 2
+        self._applicator.node.layout.content_height = viewport.height * 2
+
+
+@prep_style_class
+class OldStyle(Style):
+    # Uses two-argument layout(), as in Toga <= 0.4.8
+    def layout(self, node, viewport):
+        # A simple layout scheme that allocates twice the viewport size.
+        super().layout(viewport)
+
+
+@prep_style_class
+class TypeErrorStyle(Style):
+    # Uses the correct signature, but raises an unrelated TypeError in layout
+    def layout(self, viewport):
+        raise TypeError("An unrelated TypeError has occurred somewhere in layout()")
+
+
+@prep_style_class
+class OldTypeErrorStyle(Style):
+    # Just to be extra safe...
+    def layout(self, node, viewport):
+        raise TypeError("An unrelated TypeError has occurred somewhere in layout()")
 
 
 @prep_style_class
@@ -38,10 +60,10 @@ class BrokenStyle(BaseStyle):
     class Box(BaseBox):
         pass
 
-    def layout(self, root, viewport):
+    def layout(self, viewport):
         # A simple layout scheme that allocates twice the viewport size.
-        root.layout.content_width = viewport.width * 2
-        root.layout.content_height = viewport.height * 2
+        self._applicator.node.layout.content_width = viewport.width * 2
+        self._applicator.node.layout.content_height = viewport.height * 2
 
 
 class AttributeTestStyle(BaseStyle):
@@ -130,7 +152,8 @@ def test_create_node():
     assert child3.root == new_node
 
 
-def test_refresh():
+@pytest.mark.parametrize("StyleClass", [Style, OldStyle])
+def test_refresh(StyleClass):
     """The layout can be refreshed, and the applicator invoked"""
 
     # Define an applicator that tracks the node being rendered and its size
@@ -155,7 +178,7 @@ def test_refresh():
             )
 
     # Define a simple 2 level tree of nodes.
-    style = Style()
+    style = StyleClass()
     child1 = TestNode(style=style)
     child2 = TestNode(style=style)
     child3 = TestNode(style=style)
@@ -182,6 +205,19 @@ def test_refresh():
     assert child1.applicator.tasks == []
     assert child2.applicator.tasks == []
     assert child3.applicator.tasks == []
+
+
+@pytest.mark.parametrize("StyleClass", [TypeErrorStyle, OldTypeErrorStyle])
+def test_type_error_in_layout(StyleClass):
+    """The shim shouldn't hide unrelated TypeErrors."""
+
+    class Applicator:
+        def set_bounds(self):
+            pass
+
+    node = Node(style=StyleClass(), applicator=Applicator())
+    with pytest.raises(TypeError, match=r"unrelated TypeError"):
+        node.refresh(Viewport(50, 50))
 
 
 def test_add():

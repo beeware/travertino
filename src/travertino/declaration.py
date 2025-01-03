@@ -322,6 +322,11 @@ class BaseStyle:
             "Style must define an apply method"
         )  # pragma: no cover
 
+    def layout(self, viewport):
+        raise NotImplementedError(
+            "Style must define a layout method"
+        )  # pragma: no cover
+
     ######################################################################
     # Provide a dict-like interface
     ######################################################################

@@ -169,8 +169,24 @@ class Node:
         if self._root:
             self._root.refresh(viewport)
         else:
-            self.style.layout(self, viewport)
             if self.applicator:
+
+                ######################################################################
+                # 2024-12: Backwards compatibility for Toga <= 0.4.8
+                ######################################################################
+                # Accommodate the earlier signature of layout(), which included the node
+                # as a parameter.
+                try:
+                    self.style.layout(viewport)
+                except TypeError as error:
+                    if "layout() missing 1 required positional argument:" in str(error):
+                        self.style.layout(self, viewport)
+                    else:
+                        raise
+                ######################################################################
+                # End backwards compatibility
+                ######################################################################
+
                 self.applicator.set_bounds()
 
     def _set_root(self, node, root):
