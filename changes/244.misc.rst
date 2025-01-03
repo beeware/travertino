@@ -1,1 +1,0 @@
-Node.reresh() has been updated to use Toga 0.5.0's newer signature for style.layout, omitting the node parameter. It is still backwards-compatible with Toga 0.4.8.
