@@ -178,12 +178,8 @@ class Node:
                 # as a parameter.
                 try:
                     self.style.layout(viewport)
-
                 except TypeError as error:
-                    if (
-                        "layout() missing 1 required positional argument: 'viewport'"
-                        in str(error)
-                    ):
+                    if "layout() missing 1 required positional argument:" in str(error):
                         self.style.layout(self, viewport)
                     else:
                         raise
