@@ -26,6 +26,9 @@
    :target: https://beeware.org/bee/chat/
    :alt: Discord server
 
+**NOTE:** This repository is archived. Current development of Travertino has moved to
+the `Toga repository`_.
+
 |logo|
 
 Travertino
@@ -90,6 +93,7 @@ the `Briefcase code contribution guide
 Although that document is for a different project, the details about setting up
 your development environment are the same.
 
+.. _Toga repository: https://github.com/beeware/toga
 .. _BeeWare suite: https://beeware.org
 .. _Read The Docs: https://travertino.readthedocs.io
 .. _BeeWare Community Code of Conduct: https://beeware.org/community/behavior/
