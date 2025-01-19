@@ -1,1 +1,0 @@
-Assigning a new style object to a node that already has an applicator assigned now properly maintains an association between the applicator and the new style, and triggers a style reapplication.

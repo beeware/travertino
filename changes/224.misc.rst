@@ -1,1 +1,0 @@
-An applicator, once assigned to a node, now receives a reference to its node (as self.node).

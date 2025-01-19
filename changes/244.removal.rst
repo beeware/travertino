@@ -1,1 +1,0 @@
-The API for ``Style.layout()`` has been formally specified as part of the Travertino API. The initial ``node`` argument is no longer required as part of the ``layout()`` method. A ``Style`` instance can interrogate ``self._applicator.node`` to retrieve the node to which the style is being applied.

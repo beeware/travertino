@@ -1,1 +1,0 @@
-Removed an unnecessary reapply when assigning to a previously unassigned property, if the value being assigned is the same as the property's initial value.

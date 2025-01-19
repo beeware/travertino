@@ -1,1 +1,0 @@
-The readme has been edited to reflect that Travertino development has moved to the Toga repository.
