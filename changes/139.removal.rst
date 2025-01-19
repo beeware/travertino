@@ -1,1 +1,0 @@
-The 'default' parameter for Choice has been deprecated.

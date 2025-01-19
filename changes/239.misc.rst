@@ -1,1 +1,0 @@
-The order in which attributes are primed in ``Node.__init__`` has been altered, so that ``.parent`` is available when a style is applied.

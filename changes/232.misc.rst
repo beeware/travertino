@@ -1,1 +1,0 @@
-Applicator gets its reference to its node *before* the applicator is assigned to that node's style.
